@@ -1,0 +1,4 @@
+*.pyc
+.idea
+bot.ini
+user.ini
