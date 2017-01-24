@@ -1,0 +1,2858 @@
+[
+  {
+    "type": "game_start",
+    "resp": {
+      "replay": true
+    }
+  },
+  {
+    "type": "init",
+    "resp": {
+      "seat": 1,
+      "names": [
+        "Alice",
+        "Bob"
+      ],
+      "variant": 0,
+      "replay": true,
+      "spectating": false
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 0,
+      "suit": 1,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 49
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 1,
+      "suit": 1,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 48
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 2,
+      "suit": 0,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 47
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 3,
+      "suit": 2,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 46
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 4,
+      "suit": 0,
+      "rank": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 45
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 5,
+      "suit": 4,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 44
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 6,
+      "suit": 1,
+      "rank": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 43
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 7,
+      "suit": 0,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 42
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 8,
+      "suit": 0,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 41
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 9,
+      "suit": 2,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 40
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 0
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 1
+      },
+      "list": [
+        7
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 7,
+      "score": 0
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 0,
+        "rank": 1,
+        "index": 0,
+        "order": 7
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 10,
+      "suit": 4,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 39
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 7,
+      "score": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 1
+      },
+      "list": [
+        10
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 4,
+        "rank": 1,
+        "index": 41,
+        "order": 10
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 11,
+      "suit": 0,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 38
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 5
+      },
+      "list": [
+        6
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 0,
+        "value": 1
+      },
+      "list": [
+        1,
+        3
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 6
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 2,
+        "rank": 1,
+        "index": 21,
+        "order": 3
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 12,
+      "suit": 3,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 37
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 7
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 4,
+        "rank": 4,
+        "index": 47,
+        "order": 5
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 13,
+      "suit": 0,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 36
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 1,
+        "rank": 1,
+        "index": 11,
+        "order": 1
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 14,
+      "suit": 3,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 35
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 9
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 0,
+        "value": 1
+      },
+      "list": [
+        14
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 10
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 3,
+        "rank": 1,
+        "index": 31,
+        "order": 14
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 15,
+      "suit": 3,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 34
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 11
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 0,
+        "rank": 4,
+        "index": 7,
+        "order": 8
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 16,
+      "suit": 2,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 33
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 12
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 1,
+        "rank": 3,
+        "index": 16,
+        "order": 0
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 17,
+      "suit": 2,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 32
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 13
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 2,
+        "rank": 3,
+        "index": 25,
+        "order": 9
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 18,
+      "suit": 3,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 31
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 7,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 1
+      },
+      "list": [
+        13
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 15
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 0,
+        "rank": 1,
+        "index": 1,
+        "order": 13
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 19,
+      "suit": 1,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 30
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 7,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 16
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 0
+      },
+      "list": [
+        11
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 17
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 2,
+        "rank": 4,
+        "index": 28,
+        "order": 16
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 20,
+      "suit": 1,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 29
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 7,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 18
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 2
+      },
+      "list": [
+        20
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 19
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 1,
+        "rank": 2,
+        "index": 14,
+        "order": 20
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 21,
+      "suit": 3,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 28
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 6
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 20
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 2
+      },
+      "list": [
+        21
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 6
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 21
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 3,
+        "rank": 2,
+        "index": 34,
+        "order": 21
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 22,
+      "suit": 3,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 27
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 7
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 22
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 0,
+        "rank": 3,
+        "index": 6,
+        "order": 2
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 23,
+      "suit": 4,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 26
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 6,
+      "score": 7
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 23
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 1,
+        "value": 4
+      },
+      "list": [
+        23
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 7
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 24
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 4,
+        "rank": 2,
+        "index": 44,
+        "order": 23
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 24,
+      "suit": 1,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 25
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 25
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 0,
+        "value": 5
+      },
+      "list": [
+        4
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 26
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 3,
+        "rank": 3,
+        "index": 35,
+        "order": 12
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 25,
+      "suit": 1,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 24
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 27
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 1,
+        "value": 3
+      },
+      "list": [
+        15
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 28
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 3,
+        "rank": 3,
+        "index": 36,
+        "order": 15
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 26,
+      "suit": 1,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 23
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 9
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 29
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 3,
+        "rank": 4,
+        "index": 38,
+        "order": 18
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 27,
+      "suit": 0,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 22
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 5,
+      "score": 9
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 30
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 2
+      },
+      "list": [
+        27
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 9
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 31
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 0,
+        "rank": 2,
+        "index": 3,
+        "order": 27
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 28,
+      "suit": 3,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 21
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 10
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 32
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 4
+      },
+      "list": [
+        11,
+        28
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 10
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 33
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 3,
+        "rank": 4,
+        "index": 37,
+        "order": 28
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 29,
+      "suit": 4,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 20
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 11
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 34
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 4
+      },
+      "list": [
+        29
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 11
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 35
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 4,
+        "rank": 3,
+        "index": 46,
+        "order": 29
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 30,
+      "suit": 2,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 19
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 12
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 36
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 2,
+        "rank": 1,
+        "index": 22,
+        "order": 17
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 31,
+      "suit": 2,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 18
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 12
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 37
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 1,
+        "value": 2
+      },
+      "list": [
+        31
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 12
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 38
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 2,
+        "rank": 2,
+        "index": 24,
+        "order": 31
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 32,
+      "suit": 2,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 17
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 13
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 39
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 1,
+        "rank": 1,
+        "index": 12,
+        "order": 19
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 33,
+      "suit": 4,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 16
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 13
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 40
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 2
+      },
+      "list": [
+        30
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 13
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 41
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 2,
+        "rank": 3,
+        "index": 26,
+        "order": 30
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 34,
+      "suit": 3,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 15
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 42
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 1,
+        "rank": 4,
+        "index": 17,
+        "order": 24
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 35,
+      "suit": 3,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 43
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 3,
+        "rank": 1,
+        "index": 30,
+        "order": 22
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 36,
+      "suit": 0,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 13
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 44
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 0
+      },
+      "list": [
+        11,
+        36
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 14
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 45
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 0,
+        "rank": 3,
+        "index": 5,
+        "order": 36
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 37,
+      "suit": 4,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 12
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 15
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 46
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 1,
+        "rank": 1,
+        "index": 10,
+        "order": 25
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 38,
+      "suit": 4,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 11
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 15
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 47
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 0,
+        "rank": 4,
+        "index": 8,
+        "order": 11
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 39,
+      "suit": 1,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 10
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 16
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 48
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 0,
+        "value": 3
+      },
+      "list": [
+        39
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 16
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 49
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 1,
+        "rank": 3,
+        "index": 15,
+        "order": 39
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 40,
+      "suit": 2,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 9
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 17
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 50
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 1,
+        "rank": 2,
+        "index": 13,
+        "order": 26
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 41,
+      "suit": 1,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 8
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 17
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 51
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 0,
+        "value": 4
+      },
+      "list": [
+        38,
+        41
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 17
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 52
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 1,
+        "rank": 4,
+        "index": 18,
+        "order": 41
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 42,
+      "suit": 0,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 7
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 18
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 53
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 1,
+        "rank": 5,
+        "index": 19,
+        "order": 6
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 43,
+      "suit": 0,
+      "rank": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 6
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 19
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 54
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 4,
+        "rank": 4,
+        "index": 48,
+        "order": 38
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 44,
+      "suit": 2,
+      "rank": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 20
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 55
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 1,
+        "value": 0
+      },
+      "list": [
+        4,
+        42
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 20
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 56
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 0,
+        "rank": 5,
+        "index": 9,
+        "order": 4
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 45,
+      "suit": 2,
+      "rank": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 4
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 21
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 57
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 0,
+        "value": 4
+      },
+      "list": [
+        44
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 21
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 58
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 2,
+        "rank": 4,
+        "index": 27,
+        "order": 44
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 46,
+      "suit": 4,
+      "rank": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 3
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 22
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 59
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 1,
+      "target": 0,
+      "clue": {
+        "type": 1,
+        "value": 2
+      },
+      "list": [
+        32,
+        45
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 2,
+      "score": 22
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 60
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 2,
+        "rank": 5,
+        "index": 29,
+        "order": 45
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 0,
+      "order": 47,
+      "suit": 4,
+      "rank": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 2
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 23
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 61
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "discard",
+      "which": {
+        "suit": 4,
+        "rank": 2,
+        "index": 43,
+        "order": 33
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 48,
+      "suit": 4,
+      "rank": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 1
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 23
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 62
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 4
+      },
+      "list": [
+        37,
+        48
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 23
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 63
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 4,
+        "rank": 5,
+        "index": 49,
+        "order": 48
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw",
+      "who": 1,
+      "order": 49,
+      "suit": 3,
+      "rank": 5
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "draw_size",
+      "size": 0
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 24
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 0,
+      "num": 64
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "clue",
+      "giver": 0,
+      "target": 1,
+      "clue": {
+        "type": 1,
+        "value": 3
+      },
+      "list": [
+        34,
+        49
+      ]
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 3,
+      "score": 24
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "turn",
+      "who": 1,
+      "num": 65
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "played",
+      "which": {
+        "suit": 3,
+        "rank": 5,
+        "index": 39,
+        "order": 49
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "status",
+      "clues": 4,
+      "score": 25
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "game_over",
+      "loss": false,
+      "score": 25
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "reveal",
+      "which": {
+        "suit": 3,
+        "rank": 2,
+        "index": 33,
+        "order": 34
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "reveal",
+      "which": {
+        "suit": 4,
+        "rank": 1,
+        "index": 40,
+        "order": 37
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "reveal",
+      "which": {
+        "suit": 2,
+        "rank": 1,
+        "index": 20,
+        "order": 40
+      }
+    }
+  },
+  {
+    "type": "notify",
+    "resp": {
+      "type": "reveal",
+      "which": {
+        "suit": 0,
+        "rank": 2,
+        "index": 4,
+        "order": 43
+      }
+    }
+  }
+]
