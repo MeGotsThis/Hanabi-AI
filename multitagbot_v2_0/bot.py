@@ -361,7 +361,7 @@ class Bot(bot.Bot):
             return False
 
         distance = range(1, self.game.numPlayers)
-        if not urgent:
+        if urgent:
             distance = range(1, 2)
         for d in distance:
             player = (self.position + d) % self.game.numPlayers
