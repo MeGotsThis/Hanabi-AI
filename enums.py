@@ -22,23 +22,23 @@ class Variant(Enum):
     @property
     def pile_colors(self):
         if self is Variant.NoVariant:
-            return [Color.Blue, Color.Green, Color.Red, Color.Yellow,
+            return [Color.Blue, Color.Green, Color.Yellow, Color.Red,
                     Color.Purple]
         if self in [Variant.BlackSuit, Variant.OneOfEach]:
-            return [Color.Blue, Color.Green, Color.Red, Color.Yellow,
+            return [Color.Blue, Color.Green, Color.Yellow, Color.Red,
                     Color.Purple, Color.Black]
         if self is Variant.Rainbow:
-            return [Color.Blue, Color.Green, Color.Red, Color.Yellow,
+            return [Color.Blue, Color.Green, Color.Yellow, Color.Red,
                     Color.Purple, Color.Rainbow]
         raise ValueError
 
     @property
     def clue_colors(self):
         if self in [Variant.NoVariant, Variant.Rainbow]:
-            return [Color.Blue, Color.Green, Color.Red, Color.Yellow,
+            return [Color.Blue, Color.Green, Color.Yellow, Color.Red,
                     Color.Purple]
         if self in [Variant.BlackSuit, Variant.OneOfEach]:
-            return [Color.Blue, Color.Green, Color.Red, Color.Yellow,
+            return [Color.Blue, Color.Green, Color.Yellow, Color.Red,
                     Color.Purple, Color.Black]
         raise ValueError
 
