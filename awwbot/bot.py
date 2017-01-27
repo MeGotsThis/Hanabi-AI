@@ -1,12 +1,9 @@
 from copy import copy
 
 from bot import bot
-from enums import Color, Variant
+from enums import Color, Value, Variant
 from .card_knowledge import CardKnowledge
 from .hint import Hint
-
-colors = Variant.NoVariant.pile_colors
-maxCount = [0, 3, 2, 2, 2, 1]
 
 
 class Bot(bot.Bot):
@@ -23,13 +20,16 @@ class Bot(bot.Bot):
             raise ValueError()
 
         super().__init__(game, position, name, **kwargs)
+        self.colors = list(game.variant.pile_colors)
+        self.values = list(Value)
+
         self.handLocked = [False] * 5
         self.handLockedIndex = [None] * 5
         self.clueWaiting = [False] * 5
         self.clueWaitingIndex = [0] * 5
-        self.playedCount = {c: [0] * 6 for c in colors}
-        self.locatedCount = {c: [0] * 6 for c in colors}
-        self.eyesightCount = {c: [0] * 6 for c in colors}
+        self.playedCount = {c: [0] * 6 for c in self.colors}
+        self.locatedCount = {c: [0] * 6 for c in self.colors}
+        self.eyesightCount = {c: [0] * 6 for c in self.colors}
         self.lowestPlayableValue = 0
 
     def create_player_card(self, player, deckPosition, color, value):
@@ -56,11 +56,11 @@ class Bot(bot.Bot):
     def got_color_clue(self, player, color, positions):
         self.pleaseObserveColorHint(player, self.position, color, positions)
 
-    def someone_got_value(self, from_, to, number, positions):
-        self.pleaseObserveValueHint(from_, to, number, positions)
+    def someone_got_value(self, from_, to, value, positions):
+        self.pleaseObserveValueHint(from_, to, value, positions)
 
-    def got_value_clue(self, player, number, positions):
-        self.pleaseObserveValueHint(player, self.position, number, positions)
+    def got_value_clue(self, player, value, positions):
+        self.pleaseObserveValueHint(player, self.position, value, positions)
 
     def decide_move(self, can_clue, can_discard):
         self.pleaseMakeMove(can_discard)
@@ -70,7 +70,7 @@ class Bot(bot.Bot):
         return value == playableValue
 
     def isValuable(self, color, value):
-        if self.playedCount[color][value] != maxCount[value] - 1:
+        if self.playedCount[color][value] != value.num_copies - 1:
             return False
         return not self.isWorthless(color, value)
 
@@ -79,8 +79,8 @@ class Bot(bot.Bot):
         if value < playableValue:
             return True
         while(value > playableValue):
-            value -= 1
-            if self.playedCount[color][value] == maxCount[value]:
+            value = Value(value - 1)
+            if self.playedCount[color][value] == value.num_copies:
                 return True
         return False
 
@@ -89,7 +89,7 @@ class Bot(bot.Bot):
             return False
         if knol.playable is not None:
             return knol.playable
-        for c in colors:
+        for c in self.colors:
             if knol.cantBe[c][value]:
                 continue
             if self.isPlayable(c, value):
@@ -101,7 +101,7 @@ class Bot(bot.Bot):
             return False
         if knol.valuable is not None:
             return knol.valuable
-        for c in colors:
+        for c in self.colors:
             if knol.cantBe[c][value]:
                 continue
             if self.isValuable(c, value):
@@ -109,7 +109,7 @@ class Bot(bot.Bot):
         return False
 
     def updateEyesightCount(self):
-        self.eyesightCount = {c: [0] * 6 for c in colors}
+        self.eyesightCount = {c: [0] * 6 for c in self.colors}
         for p in self.game.players:
             for c in p.hand:
                 card = self.game.deck[c]
@@ -119,7 +119,7 @@ class Bot(bot.Bot):
                     self.eyesightCount[card.color][card.value] += 1
 
     def updateLocatedCount(self):
-        newCount = {c: [0] * 6 for c in colors}
+        newCount = {c: [0] * 6 for c in self.colors}
         for p in self.game.players:
             for c in p.hand:
                 card = self.game.deck[c]
@@ -136,7 +136,7 @@ class Bot(bot.Bot):
 
     def seePublicCard(self, color, value):
         self.playedCount[color][value] += 1
-        assert 1 <= self.playedCount[color][value] <= maxCount[value]
+        assert 1 <= self.playedCount[color][value] <= value.num_copies
 
     def nextDiscardIndex(self, player):
         best_index = 0, None
@@ -215,7 +215,7 @@ class Bot(bot.Bot):
         best_so_far.to = player
         for c in range(len(hand)):
             card = self.game.deck[hand[c]]
-            colorClue = colors[4 - c]
+            colorClue = self.colors[4 - c]
             valueClue = len(hand) - c
             colorFitness = -1
             valueFitness = -1
@@ -381,7 +381,7 @@ class Bot(bot.Bot):
             if eyeKnol[i].playable is True:
                 continue
             fitness = 6 - (card.value if card.value is not None else -1)
-            if self.game.clueCount < 1 and card.value == 5:
+            if self.game.clueCount < 1 and card.value == Value.V5:
                 fitness += 1
             if self.game.deck[self.hand[i]].playable is True:
                 fitness += 100
@@ -439,9 +439,9 @@ class Bot(bot.Bot):
         if self.game.clueCount == 0:
             return False
 
-        banned = {c: False for c in colors}
+        banned = {c: False for c in self.colors}
         nextValueForPile = {c: len(self.game.playedCards[c]) + 1
-                            for c in colors}
+                            for c in self.colors}
 
         for i in range(2, distanceForFinesse):
             lp = (self.position + i) % numPlayers
@@ -468,7 +468,7 @@ class Bot(bot.Bot):
         for c in range(len(self.game.players[pToFinesse].hand)):
             card = self.game.deck[self.game.players[pToFinesse].hand]
             if isFinessable[c]:
-                if card.rank == 5:
+                if card.rank == Value.V5:
                     isFinessable[c] = False
                 else:
                     findex = self.whatFinessePlay(pToFinesse, card.suit,
@@ -492,8 +492,8 @@ class Bot(bot.Bot):
                     if handCard.suit == fcolor and handCard.rank == fvalue:
                         colorFitness = -1
                         valueFitness = -1
-                        colorClue = colors[4 - fc]
-                        valueClue = len(fplayer_hand) - fc
+                        colorClue = self.colors[4 - fc]
+                        valueClue = self.values[len(fplayer_hand) - fc - 1]
                         for oc in range(len(fplayer_hand)):
                             if fc == oc:
                                 continue
@@ -584,7 +584,7 @@ class Bot(bot.Bot):
                 bestHint.give(self)
                 return True
 
-            self.give_value_clue(lh2, 5)
+            self.give_value_clue(lh2, Value.V5)
             return True
 
         if targetCard.rank == self.lowestPlayableValue:
@@ -593,8 +593,8 @@ class Bot(bot.Bot):
         else:
             assert targetCard.rank > self.lowestPlayableValue
 
-        if targetCard.rank == 5 and playerDistance == 1:
-            self.give_value_clue(player_to_warn, 5)
+        if targetCard.rank == Value.V5 and playerDistance == 1:
+            self.give_value_clue(player_to_warn, Value.V5)
         else:
             self.give_color_clue(player_to_warn, Color.Blue)
         return True
@@ -702,7 +702,7 @@ class Bot(bot.Bot):
             self.game.deck[deckIdx].setIsPlayable(True)
             self.clueWaiting[ap] = False
 
-        self.locatedCount = {c: [0] * 6 for c in colors}
+        self.locatedCount = {c: [0] * 6 for c in self.colors}
         self.updateLocatedCount()
         while True:
             for p in range(self.game.numPlayers):
@@ -715,13 +715,13 @@ class Bot(bot.Bot):
         self.updateEyesightCount()
 
         self.lowestPlayableValue = 6
-        for color in colors:
+        for color in self.colors:
             lowest = len(self.game.playedCards[color]) + 1
             if lowest < self.lowestPlayableValue:
                 self.lowestPlayableValue = lowest
 
-        for k in colors:
-            for v in range(1, 5):
+        for k in self.colors:
+            for v in self.values:
                 assert self.locatedCount[k][v] <= self.eyesightCount[k][v]
 
     def pleaseObserveBeforeDiscard(self, from_, card_index, deckIdx):
@@ -739,7 +739,7 @@ class Bot(bot.Bot):
         self.invalidateKnol(from_, card_index)
 
     def pleaseObserveColorHint(self, from_, to, color, card_indices):
-        playableIndex = 4 - colors.index(color)
+        playableIndex = 4 - self.colors.index(color)
         toHandSize = len(self.game.players[to].hand)
 
         seenUnclued = False
@@ -806,7 +806,7 @@ class Bot(bot.Bot):
             else:
                 knol.setCannotBeValue(value)
 
-        if value != 5:
+        if value != Value.V5:
             knol = self.game.deck[self.game.players[to].hand[playableIndex]]
             if to != (from_ + 1) % self.game.numPlayers:
                 self.clueWaiting[to] = True
@@ -902,7 +902,7 @@ class Bot(bot.Bot):
         if not can_discard:
             # TODO: Fix uesless clue
             player = (self.position + 1) % self.game.numPlayers
-            self.give_value_clue(player, 5)
+            self.give_value_clue(player, Value.V5)
         else:
             if self.maybeDiscardWorthlessCard():
                 return

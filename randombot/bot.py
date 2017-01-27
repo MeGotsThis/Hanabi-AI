@@ -1,7 +1,7 @@
 import random
 
 from bot import bot
-from enums import Color
+from enums import Value
 
 PLAY = 0
 DISCARD = 1
@@ -45,7 +45,7 @@ class Bot(bot.Bot):
             elif action == CLUE_VALUE:
                 options = []
                 for p in range(self.game.numPlayers):
-                    for v in range(1, 6):
+                    for v in Value:
                         if self.can_value_clue(p, v):
                             options.append((p, v))
                 if options:
@@ -77,25 +77,27 @@ class Bot(bot.Bot):
         print('Got Color Clue: From {} To {}'.format(
             self.game.players[from_].name, self.game.players[to].name))
         print('{} On positions {}'.format(
-            str_color(color), ', '.join(str(p) for p in positions)))
+            color.full_name(self.game.variant),
+            ', '.join(str(p) for p in positions)))
 
-    def someone_got_value(self, from_, to, number, positions):
+    def someone_got_value(self, from_, to, value, positions):
         print('Got Number Clue: From {} To {}'.format(
             self.game.players[from_].name, self.game.players[to].name))
         print('{} On positions {}'.format(
-            number, ', '.join(str(p) for p in positions)))
+            value.value, ', '.join(str(p) for p in positions)))
 
     def got_color_clue(self, player, color, positions):
         print('Got Color Clue: From {}'.format(
             self.game.players[player].name))
         print('{} On positions {}'.format(
-            str_color(color), ', '.join(str(p) for p in positions)))
+            color.full_name(self.game.variant),
+            ', '.join(str(p) for p in positions)))
 
-    def got_value_clue(self, player, number, positions):
+    def got_value_clue(self, player, value, positions):
         print('Got Number Clue: From {}'.format(
             self.game.players[player].name))
         print('{} On positions {}'.format(
-            number, ', '.join(str(p) for p in positions)))
+            value.value, ', '.join(str(p) for p in positions)))
 
     def card_played(self, deckIdx, position):
         print('Played Card: {} from slot {}'.format(

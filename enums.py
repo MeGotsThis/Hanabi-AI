@@ -1,4 +1,4 @@
-from enum import Enum, Flag
+from enum import Enum, Flag, IntEnum
 
 
 class Variant(Enum):
@@ -168,6 +168,44 @@ class Color(Flag):
         raise ValueError
 
 
+class Value(IntEnum):
+    '''
+    Only for internal usage
+    '''
+    V1 = 1
+    V2 = 2
+    V3 = 3
+    V4 = 4
+    V5 = 5
+
+    @property
+    def num_copies(self):
+        if self is Value.V1:
+            return 3
+        if self is Value.V2:
+            return 2
+        if self is Value.V3:
+            return 2
+        if self is Value.V4:
+            return 2
+        if self is Value.V5:
+            return 1
+        raise ValueError
+
+    def rank(self):
+        if self is Value.V1:
+            return Rank.R1
+        if self is Value.V2:
+            return Rank.R2
+        if self is Value.V3:
+            return Rank.R3
+        if self is Value.V4:
+            return Rank.R4
+        if self is Value.V5:
+            return Rank.R5
+        raise ValueError
+
+
 class Suit(Enum):
     '''
     Only for server reference
@@ -195,6 +233,30 @@ class Suit(Enum):
                 return Color.Black
             if variant == Variant.Rainbow:
                 return Color.Rainbow
+        raise ValueError
+
+
+class Rank(Enum):
+    '''
+    Only for server reference
+    '''
+    R1 = 1
+    R2 = 2
+    R3 = 3
+    R4 = 4
+    R5 = 5
+
+    def value(self):
+        if self is Rank.R1:
+            return Value.V1
+        if self is Rank.R2:
+            return Value.V2
+        if self is Rank.R3:
+            return Value.V3
+        if self is Rank.R4:
+            return Value.V4
+        if self is Rank.R5:
+            return Value.V5
         raise ValueError
 
 

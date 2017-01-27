@@ -46,13 +46,13 @@ class Bot(Player):
     def someone_played(self, player, deckIdx, position): ...
     def someone_discard(self, player, deckIdx, position): ...
     def someone_got_color(self, from_, to, color, positions): ...
-    def someone_got_value(self, from_, to, number, positions): ...
+    def someone_got_value(self, from_, to, value, positions): ...
 
     '''
     These will be called for only the bot
     '''
     def got_color_clue(self, player, color, positions): ...
-    def got_value_clue(self, player, number, positions): ...
+    def got_value_clue(self, player, value, positions): ...
 
     '''
     These will be called for only the bot.
@@ -90,18 +90,19 @@ class Bot(Player):
             print('Sending Color Clue {color} to {who}'.format(
                 color=color.full_name(self.game.variant),
                 who=self.game.players[who].name))
-        c = color.suit(self.game.variant)
+        suit = color.suit(self.game.variant)
         self.game.send('action', {'type': Action.Clue.value, 'target': who,
                                   'clue': {'type': Clue.Suit.value,
-                                           'value': c.value}})
+                                           'value': suit.value}})
 
     def give_value_clue(self, who, value):
         if self.debug:
             print('Sending Value Clue {value} to {who}'.format(
                 value=value, who=self.game.players[who].name))
+        rank = value.rank()
         self.game.send('action', {'type': Action.Clue.value, 'target': who,
                                   'clue': {'type': Clue.Rank.value,
-                                           'value': value}})
+                                           'value': rank.value}})
 
     def play_card(self, position):
         if self.debug:

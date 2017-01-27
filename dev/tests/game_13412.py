@@ -1,4 +1,4 @@
-from enums import Color
+from enums import Color, Value
 from testing.game_testing import GameSimulatorTesting
 from dev.bot import Bot
 
@@ -12,7 +12,7 @@ class Game13412(GameSimulatorTesting):
         # Deck size 34, Bob, Clues 6, Score 0
         self.load_game(r'games\13412.json', position=1, turn=2, botcls=Bot)
         self.send_action()
-        #self.connection.assert_clue_value(3, 2)
+        #self.connection.assert_clue_value(3, Value.V2)
         self.connection.assert_card_played_hand(3)
 
     def test_turn_6(self):

@@ -38,7 +38,7 @@ class CardKnowledge(card.Card):
     def cannotBeColor(self, color):
         if self.color is not None:
             return self.color != color
-        for v in range(1, 6):
+        for v in self.bot.values:
             if not self.cantBe[color][v]:
                 return False
         return True
@@ -62,7 +62,7 @@ class CardKnowledge(card.Card):
 
     def setMustBeValue(self, value):
         tot = 0
-        for v in range(1, 6):
+        for v in self.bot.values:
             if v == value:
                 continue
             tot += self.setCannotBeValue(v)
@@ -71,7 +71,7 @@ class CardKnowledge(card.Card):
 
     def setCannotBeColor(self, color):
         tot = 0
-        for v in range(1, 6):
+        for v in self.bot.values:
             if not self.cantBe[color][v]:
                 tot += 1
                 self.cantBe[color][v] = True
@@ -88,7 +88,7 @@ class CardKnowledge(card.Card):
     def setIsPlayable(self, knownPlayable):
         for c in colors:
             playableValue = len(self.bot.game.playedCards[c]) + 1
-            for v in range(1, 6):
+            for v in self.bot.values:
                 if self.cantBe[c][v]:
                     continue
                 if (v == playableValue) != knownPlayable:
@@ -97,7 +97,7 @@ class CardKnowledge(card.Card):
 
     def setIsValuable(self, knownValuable):
         for c in colors:
-            for v in range(1, 6):
+            for v in self.bot.values:
                 if self.cantBe[c][v]:
                     continue
                 if self.bot.isValuable(c, v) != knownValuable:
@@ -106,7 +106,7 @@ class CardKnowledge(card.Card):
 
     def setIsWorthless(self, knownWorthless):
         for c in colors:
-            for v in range(1, 6):
+            for v in self.bot.values:
                 if self.cantBe[c][v]:
                     continue
                 if self.bot.isWorthless(c, v) != knownWorthless:
@@ -124,7 +124,7 @@ class CardKnowledge(card.Card):
         yesW, noW = False, False
         for c in colors:
             playableValue = len(self.bot.game.playedCards[c]) + 1
-            for v in range(1, 6):
+            for v in self.bot.values:
                 if self.cantBe[c][v]:
                     continue
                 if v < playableValue:
@@ -183,7 +183,7 @@ class CardKnowledge(card.Card):
 
         value = self.value
         if value is None:
-            for v in range(1, 6):
+            for v in self.bot.values:
                 if self.cannotBeValue(v):
                     continue
                 elif value is None:
@@ -203,10 +203,10 @@ class CardKnowledge(card.Card):
         if self.color is None or self.value is None:
             restart = False
             for c in colors:
-                for v in range(1, 6):
+                for v in self.bot.values:
                     if self.cantBe[c][v]:
                         continue
-                    total = maxCards[v]
+                    total = v.num_copies
                     played = self.bot.playedCount[c][v]
                     if useMyEyesight:
                         held = self.bot.eyeSightCount[c][v]

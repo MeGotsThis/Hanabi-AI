@@ -1,4 +1,5 @@
 from bot import bot
+from enums import Value
 
 
 class Bot(bot.Bot):
@@ -104,8 +105,9 @@ class Bot(bot.Bot):
                         raise ValueError()
                 except ValueError:
                     continue
-                if self.can_value_clue(w, i):
-                    self.give_value_clue(w, i)
+                v = Value(i)
+                if self.can_value_clue(w, v):
+                    self.give_value_clue(w, v)
                     break
                 else:
                     print('The clue does not mark any cards')
@@ -238,11 +240,11 @@ class Bot(bot.Bot):
             color.full_name(self.game.variant),
             ', '.join(str(p) for p in positions)))
 
-    def someone_got_value(self, from_, to, number, positions):
+    def someone_got_value(self, from_, to, value, positions):
         print('Got Number Clue: From {} To {}'.format(
             self.game.players[from_].name, self.game.players[to].name))
         print('{} On positions {}'.format(
-            number, ', '.join(str(p) for p in positions)))
+            value.value, ', '.join(str(p) for p in positions)))
 
     def got_color_clue(self, player, color, positions):
         print('Got Color Clue: From {}'.format(
@@ -251,11 +253,11 @@ class Bot(bot.Bot):
             color.full_name(self.game.variant),
             ', '.join(str(p) for p in positions)))
 
-    def got_value_clue(self, player, number, positions):
+    def got_value_clue(self, player, value, positions):
         print('Got Number Clue: From {}'.format(
             self.game.players[player].name))
         print('{} On positions {}'.format(
-            number, ', '.join(str(p) for p in positions)))
+            value.value, ', '.join(str(p) for p in positions)))
 
     def card_played(self, deckIdx, position):
         print('Played Card: {} from slot {}'.format(

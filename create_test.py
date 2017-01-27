@@ -5,14 +5,14 @@ from enums import Clue
 
 colors = ['Color.Blue', 'Color.Green', 'Color.Yellow', 'Color.Red',
           'Color.Purple', 'Color.Black']
-
+values = [0, 'Value.V1', 'Value.V2', 'Value.V3', 'Value.V4', 'Value.V5']
 config = configparser.ConfigParser()
 config.read('bot.ini')
 
 bot = config['BOT']['bot']
 
 script = '''\
-from enums import Color
+from enums import Color, Value, Value
 from testing.game_testing import GameSimulatorTesting
 from ''' + bot + '''.bot import Bot
 
@@ -81,7 +81,7 @@ Clues ''' + str(clues) + ''', Score ''' + str(score) + """
 + ''', turn=''' + str(currentTurn) + ''', botcls=Bot)
         self.send_action()
         self.connection.assert_clue_value\
-(''' + str(data['target']) + ''', ''' + str(data['clue']['value']) + ''')
+(''' + str(data['target']) + ''', ''' + values[data['clue']['value']] + ''')
 
 '''
             elif data['type'] == 'played':

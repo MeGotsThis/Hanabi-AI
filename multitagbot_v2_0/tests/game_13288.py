@@ -1,4 +1,4 @@
-from enums import Color
+from enums import Color, Value
 from testing.game_testing import GameSimulatorTesting
 from multitagbot_v2_0.bot import Bot
 
@@ -12,7 +12,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 40, Bob, Clues 7, Score 0
         self.load_game(r'games\13288.json', position=1, turn=1, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(0, 1)
+        self.connection.assert_clue_value(0, Value.V1)
 
     def test_turn_3(self):
         # Deck size 39, Bob, Clues 6, Score 1
@@ -30,7 +30,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 36, Bob, Clues 7, Score 2
         self.load_game(r'games\13288.json', position=1, turn=7, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(0, 3)
+        self.connection.assert_clue_value(0, Value.V3)
 
     def test_turn_9(self):
         # Deck size 36, Bob, Clues 5, Score 2
@@ -49,7 +49,7 @@ class Game13288(GameSimulatorTesting):
         self.load_game(r'games\13288.json', position=1, turn=13, botcls=Bot)
         self.send_action()
         #self.connection.assert_card_played_hand(0)
-        #self.connection.assert_clue_value(0, 5)
+        #self.connection.assert_clue_value(0, Value.V5)
         self.connection.assert_clue_color(0, Color.Green)
 
     def test_turn_15(self):
@@ -62,7 +62,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 30, Bob, Clues 5, Score 5
         self.load_game(r'games\13288.json', position=1, turn=17, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(0, 1)
+        self.connection.assert_clue_value(0, Value.V1)
 
     def test_turn_19(self):
         # Deck size 29, Bob, Clues 4, Score 6
@@ -110,7 +110,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 20, Bob, Clues 1, Score 13
         self.load_game(r'games\13288.json', position=1, turn=33, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(0, 4)
+        self.connection.assert_clue_value(0, Value.V4)
 
     def test_turn_35(self):
         # Deck size 19, Bob, Clues 1, Score 13
@@ -152,7 +152,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 10, Bob, Clues 6, Score 16
         self.load_game(r'games\13288.json', position=1, turn=47, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(0, 3)
+        self.connection.assert_clue_value(0, Value.V3)
 
     def test_turn_49(self):
         # Deck size 10, Bob, Clues 4, Score 16

@@ -2,7 +2,7 @@ import json
 import unittest
 
 from game import Game
-from enums import Action, Clue, Suit, Variant
+from enums import Action, Clue, Rank, Suit, Variant
 
 
 class GameSimulatorTesting(unittest.TestCase):
@@ -81,8 +81,9 @@ class MockConnection:
         assert emit[1]['resp']['target'] == who, 'Clued wrong person'
         assert emit[1]['resp']['clue']['type'] == Clue.Rank.value,\
             'Clued a Color, not number'
-        assert emit[1]['resp']['clue']['value'] == value,\
-            'Clued {}, Not {}'.format(emit[1]['resp']['clue']['value'], value)
+        assert emit[1]['resp']['clue']['value'] == value.rank().value,\
+            'Clued {}, Not {}'.format(emit[1]['resp']['clue']['value'],
+                                      value.value)
 
     def assert_card_played_hand(self, position, *, when=-1):
         self.assert_card_played(self.bot.hand[position], when=when)
@@ -136,7 +137,7 @@ class MockConnection:
             emit[1]['resp']['type'] == Action.Clue.value
             and emit[1]['resp']['target'] == who
             and emit[1]['resp']['clue']['type'] == Clue.Rank.value
-            and emit[1]['resp']['clue']['value'] == value
+            and emit[1]['resp']['clue']['value'] == value.rank().value
             ), 'Clued with {} to {}'.format(emit[1]['resp']['clue']['value'],
                                             who)
 
