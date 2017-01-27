@@ -1,4 +1,4 @@
-from enum import Enum, IntFlag
+from enum import Enum, Flag
 
 
 class Variant(Enum):
@@ -43,7 +43,7 @@ class Variant(Enum):
         raise ValueError
 
 
-class Color(IntFlag):
+class Color(Flag):
     '''
     Only for internal usage
     '''

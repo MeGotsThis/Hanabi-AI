@@ -535,10 +535,12 @@ class Bot(bot.Bot):
 
                 useValue = (valueWorthlessHint is not None
                             and (colorWorthlessHint is None
-                                 or valueWorthlessHint >= colorWorthlessHint))
+                                 or valueWorthlessFitness
+                                      >= colorWorthlessFitness))
                 useColor = (colorWorthlessHint is not None
                             and (valueWorthlessHint is None
-                                 or valueWorthlessHint < colorWorthlessHint))
+                                 or valueWorthlessFitness
+                                      < colorWorthlessFitness))
                 if useColor and useValue:
                     assert False
                 elif useColor:
