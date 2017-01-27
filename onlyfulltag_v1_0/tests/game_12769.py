@@ -158,7 +158,8 @@ class Game12769(GameSimulatorTesting):
         # Deck size 10, Bob, Clues 1, Score 17
         self.load_game('games/12769.json', position=1, turn=51, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_played_hand(0)
+        #self.connection.assert_card_played_hand(0)
+        self.connection.assert_card_played_hand(1)
 
     def test_turn_53(self):
         # Deck size 9, Bob, Clues 0, Score 18
@@ -190,7 +191,8 @@ class Game12769(GameSimulatorTesting):
         self.load_game('games/12769.json', position=1, turn=61, botcls=Bot)
         self.assertEqual(self.bot.lowestPlayableValue, 5)
         self.send_action()
-        self.connection.assert_card_played_hand(0)
+        #self.connection.assert_card_played_hand(0)
+        self.connection.assert_card_played_hand(4)
 
     def test_turn_63(self):
         # Deck size 3, Bob, Clues 0, Score 21

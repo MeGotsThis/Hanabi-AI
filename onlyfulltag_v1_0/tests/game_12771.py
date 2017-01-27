@@ -177,7 +177,8 @@ class Game12771(GameSimulatorTesting):
         # Deck size 8, Bob, Clues 1, Score 13
         self.load_game('games/12771.json', position=1, turn=56, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(1)
+        #self.connection.assert_card_discarded_hand(1)
+        self.connection.assert_card_played_hand(2)
 
     def test_turn_58(self):
         # Deck size 7, Bob, Clues 1, Score 13
@@ -207,13 +208,15 @@ class Game12771(GameSimulatorTesting):
         # Deck size 3, Bob, Clues 0, Score 15
         self.load_game('games/12771.json', position=1, turn=66, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_played_hand(2)
+        #self.connection.assert_card_played_hand(2)
+        self.connection.assert_card_played_hand(3)
 
     def test_turn_68(self):
         # Deck size 1, Bob, Clues 1, Score 16
         self.load_game('games/12771.json', position=1, turn=68, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(1)
+        #self.connection.assert_card_discarded_hand(1)
+        self.connection.assert_card_played_hand(2)
 
     def test_turn_70(self):
         # Deck size 0, Bob, Clues 1, Score 16
