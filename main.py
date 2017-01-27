@@ -9,7 +9,7 @@ import socketIO_client
 import six
 
 from game import Game
-from variant import str_variant, NO_VARIANT, BLACK_SUIT, ONE_OF_EACH, RAINBOW
+from enums import Variant
 
 _errorObj = object()
 
@@ -69,8 +69,8 @@ def on_message(*args):
         if botconfig['BOT']['bot'] in botconfig:
             kwargs = ChainMap(botconfig[botconfig['BOT']['bot']],
                                botconfig['BOT'])
-        game = Game(conn, data['variant'], data['names'], data['seat'], bot,
-                    **kwargs)
+        game = Game(conn, Variant(data['variant']), data['names'],
+                    data['seat'], bot, **kwargs)
         print('Game Loaded')
         conn.emit('message', {'type': 'ready', 'resp': {}})
     elif mtype in ['hello', 'user', 'user_left', 'chat',
@@ -96,7 +96,7 @@ def int_input(prompt='-->', *, min=None, max=None, error=_errorObj):
             i = int(input(prompt))
             if min is not None and i < min:
                 raise ValueError()
-            if max is not None and i < max:
+            if max is not None and i > max:
                 raise ValueError()
             return i
         except ValueError:
@@ -147,14 +147,13 @@ try:
 
         if i in [1, 2]:
             if i == 1:
-                name = input('Game Name -->')
-                max_players = int_input('Max Players (2 - 5) -->',
-                                        min=0, max=5)
-                variants = [NO_VARIANT, BLACK_SUIT, ONE_OF_EACH, RAINBOW]
+                name = input('Game Name --> ')
+                max_players = int_input('Max Players (2 - 5) --> ',
+                                        min=2, max=5)
                 print('Variant')
-                for v in variants:
-                    print('({}) {}'.format(v, str_variant(v)))
-                variant = int_input(min=0, max=len(variants) - 1)
+                for variant in Variant:
+                    print('({}) {}'.format(variant.value, variant.full_name))
+                variant = int_input(min=0, max=len(Variant) - 1)
                 print('Allow Spectators? (y or 1 for yes)')
                 allow_spec = input('--> ') in ['1', 'y', 'Y']
                 d = {'type': 'create_table',
@@ -174,7 +173,7 @@ try:
                         print('({:>5}) {}, Players: {}/{}, Variant: {}'.format(
                             id, table['name'], table['num_players'],
                             table['max_players'],
-                            str_variant(table['variant'])))
+                            Variant(table['variant']).full_name))
                     try:
                         t = int(input('--> '))
                     except ValueError:
@@ -232,7 +231,8 @@ try:
                         continue
                     print('({:>5}) {}, Players: {}/{}, Variant: {}'.format(
                         id, table['name'], table['num_players'],
-                        table['max_players'], str_variant(table['variant'])))
+                        table['max_players'],
+                        Variant(table['variant']).full_name))
                 try:
                     t = int(input('--> '))
                 except ValueError:

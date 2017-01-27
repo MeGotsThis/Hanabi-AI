@@ -1,8 +1,7 @@
-import color
-
 from bot import card
+from enums import Variant
 
-colors = [color.BLUE, color.GREEN, color.YELLOW, color.RED, color.PURPLE]
+colors = list(Variant.NoVariant.pile_colors)
 maxCards = [0, 3, 2, 2, 2, 1]
 
 

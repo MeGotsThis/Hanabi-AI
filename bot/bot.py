@@ -1,7 +1,6 @@
 from abc import abstractmethod
 
-from color import clue_color, str_color
-from game import SUIT, RANK
+from enums import Action, Clue
 from .card import Card
 from .player import Player
 
@@ -89,17 +88,20 @@ class Bot(Player):
     def give_color_clue(self, who, color):
         if self.debug:
             print('Sending Color Clue {color} to {who}'.format(
-                color=str_color(color), who=self.game.players[who].name))
-        c = clue_color(color)
-        self.game.send('action', {'type': 0, 'target': who,
-                                  'clue': {'type': SUIT, 'value': c}})
+                color=color.full_name(self.game.variant),
+                who=self.game.players[who].name))
+        c = color.suit(self.game.variant)
+        self.game.send('action', {'type': Action.Clue.value, 'target': who,
+                                  'clue': {'type': Clue.Suit.value,
+                                           'value': c.value}})
 
     def give_value_clue(self, who, value):
         if self.debug:
             print('Sending Value Clue {value} to {who}'.format(
                 value=value, who=self.game.players[who].name))
-        self.game.send('action', {'type': 0, 'target': who,
-                                  'clue': {'type': RANK, 'value': value}})
+        self.game.send('action', {'type': Action.Clue.value, 'target': who,
+                                  'clue': {'type': Clue.Rank.value,
+                                           'value': value}})
 
     def play_card(self, position):
         if self.debug:
@@ -107,7 +109,8 @@ class Bot(Player):
                 'Sending Playing Card from slot {position}, deck index '
                 '{deckIndex}'.format(
                     position=position, deckIndex=self.hand[position]))
-        self.game.send('action', {'type': 1, 'target': self.hand[position]})
+        self.game.send('action', {'type': Action.Play.value,
+                                  'target': self.hand[position]})
 
     def discard_card(self, position):
         if self.debug:
@@ -115,4 +118,5 @@ class Bot(Player):
                 'Sending Discarding Card from slot {position}, deck index '
                 '{deckIndex}'.format(
                     position=position, deckIndex=self.hand[position]))
-        self.game.send('action', {'type': 2, 'target': self.hand[position]})
+        self.game.send('action', {'type': Action.Discard.value,
+                                  'target': self.hand[position]})

@@ -1,4 +1,4 @@
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
+from enums import Color
 from testing.game_testing import GameSimulatorTesting
 from dev.bot import Bot
 
@@ -36,7 +36,7 @@ class Game13384(GameSimulatorTesting):
         # Deck size 24, Donald, Clues 4, Score 6
         self.load_game(r'games\13384.json', position=3, turn=18, botcls=Bot)
         self.send_action()
-        #self.connection.assert_clue_color(2, GREEN)
+        #self.connection.assert_clue_color(2, Color.Green)
         self.connection.assert_card_played_hand(0)
 
     def test_turn_22(self):
@@ -44,7 +44,7 @@ class Game13384(GameSimulatorTesting):
         self.load_game(r'games\13384.json', position=3, turn=22, botcls=Bot)
         self.send_action()
         card = self.game.deck[self.bot.hand[2]]
-        self.assertCountEqual(card.playColors, [GREEN, YELLOW, PURPLE])
+        self.assertCountEqual(card.playColors, [Color.Green, Color.Yellow, Color.Purple])
         self.connection.assert_card_played_hand(0)
 
     def test_turn_26(self):
@@ -63,7 +63,7 @@ class Game13384(GameSimulatorTesting):
         # Deck size 14, Donald, Clues 1, Score 12
         self.load_game(r'games\13384.json', position=3, turn=34, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(2, RED)
+        self.connection.assert_clue_color(2, Color.Red)
 
     def test_turn_38(self):
         # Deck size 12, Donald, Clues 0, Score 13
@@ -81,7 +81,7 @@ class Game13384(GameSimulatorTesting):
         # Deck size 6, Donald, Clues 2, Score 15
         self.load_game(r'games\13384.json', position=3, turn=46, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(1, PURPLE)
+        self.connection.assert_clue_color(1, Color.Purple)
 
     def test_turn_50(self):
         # Deck size 4, Donald, Clues 0, Score 17
@@ -99,5 +99,5 @@ class Game13384(GameSimulatorTesting):
         # Deck size 0, Donald, Clues 2, Score 22
         self.load_game(r'games\13384.json', position=3, turn=58, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, GREEN)
+        self.connection.assert_clue_color(0, Color.Green)
 

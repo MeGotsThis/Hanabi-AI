@@ -3,12 +3,11 @@ import time
 from itertools import chain
 
 from bot import bot
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
-from variant import NO_VARIANT
+from enums import Variant
 from .card_knowledge import CardKnowledge
 from .hint import Hint
 
-colors = [BLUE, GREEN, YELLOW, RED, PURPLE]
+colors = list(Variant.NoVariant.pile_colors)
 maxCount = [0, 3, 2, 2, 2, 1]
 
 
@@ -22,7 +21,7 @@ class Bot(bot.Bot):
     BOT_NAME = 'Multi-tag Bot v2.0'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
-        if game.variant != NO_VARIANT:
+        if game.variant != Variant.NoVariant:
             raise ValueError()
 
         super().__init__(game, position, name, **kwargs)

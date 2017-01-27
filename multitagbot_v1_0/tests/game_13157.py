@@ -1,4 +1,4 @@
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
+from enums import Color
 from testing.game_testing import GameSimulatorTesting
 from multitagbot_v1_0.bot import Bot
 
@@ -44,7 +44,7 @@ class Game13157(GameSimulatorTesting):
         # Deck size 33, Bob, Clues 7, Score 3
         self.load_game(r'games\13157.json', position=1, turn=12, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, RED)
+        self.connection.assert_clue_color(0, Color.Red)
 
     def test_turn_14(self):
         # Deck size 32, Bob, Clues 6, Score 4
@@ -80,13 +80,13 @@ class Game13157(GameSimulatorTesting):
         # Deck size 26, Bob, Clues 6, Score 6
         self.load_game(r'games\13157.json', position=1, turn=24, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, BLUE)
+        self.connection.assert_clue_color(0, Color.Blue)
 
     def test_turn_26(self):
         # Deck size 25, Bob, Clues 5, Score 7
         self.load_game(r'games\13157.json', position=1, turn=26, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, YELLOW)
+        self.connection.assert_clue_color(0, Color.Yellow)
 
     def test_turn_28(self):
         # Deck size 24, Bob, Clues 4, Score 8

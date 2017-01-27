@@ -1,14 +1,11 @@
 from copy import copy
 
-import color
-
 from bot import bot
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
-from variant import NO_VARIANT
+from enums import Color, Variant
 from .card_knowledge import CardKnowledge
 from .hint import Hint
 
-colors = [BLUE, GREEN, YELLOW, RED, PURPLE]
+colors = Variant.NoVariant.pile_colors
 maxCount = [0, 3, 2, 2, 2, 1]
 
 
@@ -22,7 +19,7 @@ class Bot(bot.Bot):
     BOT_NAME = 'Aww Bot'
 
     def __init__(self, game, position, name, **kwargs):
-        if game.variant != NO_VARIANT:
+        if game.variant != Variant.NoVariant:
             raise ValueError()
 
         super().__init__(game, position, name, **kwargs)
@@ -229,7 +226,7 @@ class Bot(bot.Bot):
                     continue
 
                 clueElsewhere = self.isCluedElsewhere(player, c)
-                if colorClue != BLUE:
+                if colorClue != Color.Blue:
                     colorFitness = 26 - card.value
                     if clueElsewhere is True:
                         colorFitness -= 5
@@ -501,7 +498,7 @@ class Bot(bot.Bot):
                             if fc == oc:
                                 continue
                             ocCard = self.game.deck[fplayer_hand[oc]]
-                            if colorClue != BLUE:
+                            if colorClue != Color.Blue:
                                 colorFitness += 1
                                 if fplayer_hand[oc].suit == colorClue:
                                     if not ocCard.mustBeColor(colorClue):
@@ -587,7 +584,6 @@ class Bot(bot.Bot):
                 bestHint.give(self)
                 return True
 
-            # TODO: How to handle when there are no 5's
             self.give_value_clue(lh2, 5)
             return True
 
@@ -600,8 +596,7 @@ class Bot(bot.Bot):
         if targetCard.rank == 5 and playerDistance == 1:
             self.give_value_clue(player_to_warn, 5)
         else:
-            # TODO: How to handle when there are no reds
-            self.give_color_clue(player_to_warn, RED)
+            self.give_color_clue(player_to_warn, Color.Blue)
         return True
 
     def maybeGiveSuperHint(self):
@@ -750,7 +745,7 @@ class Bot(bot.Bot):
         seenUnclued = False
         for i in range(toHandSize):
             knol = self.game.deck[self.game.players[to].hand[i]]
-            if color == BLUE and not seenUnclued and not knol.clued:
+            if color == Color.Blue and not seenUnclued and not knol.clued:
                 seenUnclued = True
                 knol.clued = True
                 knol.setIsValuable(True)
@@ -762,7 +757,7 @@ class Bot(bot.Bot):
                 knol.setCannotBeColor(color)
 
         numPlayers = self.game.numPlayers
-        if color != BLUE:
+        if color != Color.Blue:
             knol = self.game.deck[self.game.players[to].hand[playableIndex]]
             if to != (from_ + 1) % numPlayers:
                 self.clueWaiting[to] = True

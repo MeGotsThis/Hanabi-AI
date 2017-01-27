@@ -1,8 +1,8 @@
 import json
 import unittest
 
-from game import Game, SUIT, RANK
-from color import card_color, clue_color, str_color
+from game import Game
+from enums import Action, Clue, Suit, Variant
 
 
 class GameSimulatorTesting(unittest.TestCase):
@@ -33,8 +33,9 @@ class GameSimulatorTesting(unittest.TestCase):
         if mtype == 'game_start':
             pass
         elif mtype == 'init':
-            self.game = Game(self.connection, data['variant'], data['names'],
-                             self.position, self.botcls, **self.botkwargs)
+            self.game = Game(self.connection, Variant(data['variant']),
+                             data['names'], self.position, self.botcls,
+                             **self.botkwargs)
             self.bot = self.game.bot
             self.connection.game = self.game
             self.connection.bot = self.bot
@@ -60,24 +61,25 @@ class MockConnection:
 
     def assert_clue_color(self, who, color, *, when=-1):
         emit = self.emitlog[when]
+        suit = color.suit(self.game.variant)
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert emit[1]['resp']['type'] == 0, 'Not Cluing'
+        assert emit[1]['resp']['type'] == Action.Clue.value, 'Not Cluing'
         assert emit[1]['resp']['target'] == who, 'Clued wrong person'
-        assert emit[1]['resp']['clue']['type'] == SUIT,\
+        assert emit[1]['resp']['clue']['type'] == Clue.Suit.value,\
             'Clued a Number, not color'
-        assert emit[1]['resp']['clue']['value'] == clue_color(color),\
+        assert emit[1]['resp']['clue']['value'] == suit.value,\
             'Clued {}, Not {}'.format(
-                str_color(card_color(emit[1]['resp']['clue']['value'],
-                                     self.game.variant)), color)
+                Suit(emit[1]['resp']['clue']['value']).name,
+                color.full_name(self.game.variant))
 
     def assert_clue_value(self, who, value, *, when=-1):
         emit = self.emitlog[when]
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert emit[1]['resp']['type'] == 0, 'Not Cluing'
+        assert emit[1]['resp']['type'] == Action.Clue.value, 'Not Cluing'
         assert emit[1]['resp']['target'] == who, 'Clued wrong person'
-        assert emit[1]['resp']['clue']['type'] == RANK,\
+        assert emit[1]['resp']['clue']['type'] == Clue.Rank.value,\
             'Clued a Color, not number'
         assert emit[1]['resp']['clue']['value'] == value,\
             'Clued {}, Not {}'.format(emit[1]['resp']['clue']['value'], value)
@@ -93,7 +95,7 @@ class MockConnection:
             position = self.bot.hand.index(emit[1]['resp']['target'])
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert emit[1]['resp']['type'] == 1, 'Not Playing'
+        assert emit[1]['resp']['type'] == Action.Play.value, 'Not Playing'
         assert emit[1]['resp']['target'] == deckIdx,\
             'Played {}, Not {}, Position {}'.format(
                 emit[1]['resp']['target'], deckIdx, position)
@@ -109,29 +111,31 @@ class MockConnection:
             position = self.bot.hand.index(emit[1]['resp']['target'])
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert emit[1]['resp']['type'] == 2, 'Not Discarding'
+        assert emit[1]['resp']['type'] == Action.Discard.value, 'Not Discarding'
         assert emit[1]['resp']['target'] == deckIdx,\
             'Discarded {}, Not {}, Position {}'.format(
                 emit[1]['resp']['target'], deckIdx, position)
 
     def assert_not_clue_color(self, who, color, *, when=-1):
         emit = self.emitlog[when]
+        suit = color.suit(self.game.variant)
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert not (emit[1]['resp']['type'] == 0
+        assert not (emit[1]['resp']['type'] == Action.Clue.value
                     and emit[1]['resp']['target'] == who
-                    and emit[1]['resp']['clue']['type'] == SUIT
-                    and emit[1]['resp']['clue']['value'] == clue_color(color)
-                    ), 'Clued with {} to {}'.format(str_color(color), who)
+                    and emit[1]['resp']['clue']['type'] == Clue.Suit.value
+                    and emit[1]['resp']['clue']['value'] == suit.value
+                    ), 'Clued with {} to {}'.format(
+                        color.full_name(self.game.variant), who)
 
     def assert_not_clue_value(self, who, value, *, when=-1):
         emit = self.emitlog[when]
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
         assert not (
-            emit[1]['resp']['type'] == 0
+            emit[1]['resp']['type'] == Action.Clue.value
             and emit[1]['resp']['target'] == who
-            and emit[1]['resp']['clue']['type'] == RANK
+            and emit[1]['resp']['clue']['type'] == Clue.Rank.value
             and emit[1]['resp']['clue']['value'] == value
             ), 'Clued with {} to {}'.format(emit[1]['resp']['clue']['value'],
                                             who)
@@ -147,7 +151,7 @@ class MockConnection:
             position = self.bot.hand.index(emit[1]['resp']['target'])
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert not (emit[1]['resp']['type'] == 1
+        assert not (emit[1]['resp']['type'] == Action.Play.value
                     and emit[1]['resp']['target'] == deckIdx
                     ), 'Played {}, Position {}'.format(
                         emit[1]['resp']['target'], position)
@@ -163,7 +167,7 @@ class MockConnection:
             position = self.bot.hand.index(emit[1]['resp']['target'])
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        assert not (emit[1]['resp']['type'] == 2
+        assert not (emit[1]['resp']['type'] == Action.Discard.value
                     and emit[1]['resp']['target'] == deckIdx
                     ), 'Discarded {}, Position {}'.format(
                         emit[1]['resp']['target'], position)
@@ -172,27 +176,27 @@ class MockConnection:
         emit = self.emitlog[when]
         assert emit[0] == 'message', 'Wrong Type'
         assert emit[1]['type'] == 'action', 'Wrong Type'
-        if emit[1]['resp']['type'] == 0:
+        if emit[1]['resp']['type'] == Action.Clue.value:
             who = emit[1]['resp']['target']
             if self.game is not None:
                 who = self.game.players[emit[1]['resp']['target']].name
-            if emit[1]['resp']['clue']['type'] == SUIT:
+            if emit[1]['resp']['clue']['type'] == Clue.Suit.value:
                 scolor = emit[1]['resp']['clue']['value']
-                color = str_color(card_color(scolor, self.game.variant))
-                print('Clued color {} to {}'.format(color, who))
-            elif emit[1]['resp']['clue']['type'] == RANK:
+                color = Suit(scolor)
+                print('Clued color {} to {}'.format(color.name, who))
+            elif emit[1]['resp']['clue']['type'] == Clue.Rank.value:
                 value = emit[1]['resp']['clue']['value']
                 print('Clued value {} to {}'.format(value, who))
             else:
                 assert False
-        elif emit[1]['resp']['type'] == 1:
+        elif emit[1]['resp']['type'] == Action.Play.value:
             position = 'Unknown'
             if (self.bot is not None
                     and emit[1]['resp']['target'] in self.bot.hand):
                 position = self.bot.hand.index(emit[1]['resp']['target'])
             print('Played deckIdx {}, position {}'.format(
                 emit[1]['resp']['target'], position))
-        elif emit[1]['resp']['type'] == 2:
+        elif emit[1]['resp']['type'] == Action.Discard.value:
             position = 'Unknown'
             if (self.bot is not None
                     and emit[1]['resp']['target'] in self.bot.hand):

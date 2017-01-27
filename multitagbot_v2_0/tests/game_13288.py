@@ -1,4 +1,4 @@
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
+from enums import Color
 from testing.game_testing import GameSimulatorTesting
 from multitagbot_v2_0.bot import Bot
 
@@ -50,13 +50,13 @@ class Game13288(GameSimulatorTesting):
         self.send_action()
         #self.connection.assert_card_played_hand(0)
         #self.connection.assert_clue_value(0, 5)
-        self.connection.assert_clue_color(0, GREEN)
+        self.connection.assert_clue_color(0, Color.Green)
 
     def test_turn_15(self):
         # Deck size 31, Bob, Clues 6, Score 4
         self.load_game(r'games\13288.json', position=1, turn=15, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, GREEN)
+        self.connection.assert_clue_color(0, Color.Green)
 
     def test_turn_17(self):
         # Deck size 30, Bob, Clues 5, Score 5
@@ -128,7 +128,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 15, Bob, Clues 5, Score 14
         self.load_game(r'games\13288.json', position=1, turn=39, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, PURPLE)
+        self.connection.assert_clue_color(0, Color.Purple)
 
     def test_turn_41(self):
         # Deck size 14, Bob, Clues 4, Score 15
@@ -140,13 +140,13 @@ class Game13288(GameSimulatorTesting):
         # Deck size 12, Bob, Clues 6, Score 15
         self.load_game(r'games\13288.json', position=1, turn=43, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, YELLOW)
+        self.connection.assert_clue_color(0, Color.Yellow)
 
     def test_turn_45(self):
         # Deck size 11, Bob, Clues 6, Score 15
         self.load_game(r'games\13288.json', position=1, turn=45, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, GREEN)
+        self.connection.assert_clue_color(0, Color.Green)
 
     def test_turn_47(self):
         # Deck size 10, Bob, Clues 6, Score 16
@@ -195,7 +195,7 @@ class Game13288(GameSimulatorTesting):
         # Deck size 3, Bob, Clues 5, Score 17
         self.load_game(r'games\13288.json', position=1, turn=61, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(0, RED)
+        self.connection.assert_clue_color(0, Color.Red)
 
     def test_turn_63(self):
         # Deck size 2, Bob, Clues 4, Score 18

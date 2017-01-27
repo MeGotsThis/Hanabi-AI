@@ -1,9 +1,7 @@
 import random
 
 from bot import bot
-from color import str_color, BLACK, BLUE, GREEN, PURPLE, RED, YELLOW, RAINBOW
-
-colors = [BLUE, GREEN, YELLOW, RED, PURPLE]
+from enums import Color
 
 PLAY = 0
 DISCARD = 1
@@ -37,7 +35,7 @@ class Bot(bot.Bot):
             elif action == CLUE_COLOR:
                 options = []
                 for p in range(self.game.numPlayers):
-                    for c in colors:
+                    for c in self.game.variant.clue_colors:
                         if self.can_color_clue(p, c):
                             options.append((p, c))
                 if options:

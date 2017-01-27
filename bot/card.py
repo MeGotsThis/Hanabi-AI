@@ -1,6 +1,3 @@
-import color
-
-
 class Card:
     def __init__(self, game, player, deckPosition, suit, rank):
         self.game = game
@@ -17,7 +14,7 @@ class Card:
         if self.suit is None or self.rank is None:
             return "Unknown Card"
         return "{color} {number}".format(
-            color=color.str_color(self.suit),
+            color=self.suit.full_name(self.game.variant),
             number=self.rank)
 
     def got_positive_color(self, color):

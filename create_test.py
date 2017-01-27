@@ -1,9 +1,10 @@
 import configparser
 import json
 
-from game import RANK, SUIT
+from enums import Clue
 
-colors = ['BLUE', 'GREEN', 'YELLOW', 'RED', 'PURPLE', 'BLACK']
+colors = ['Color.Blue', 'Color.Green', 'Color.Yellow', 'Color.Red',
+          'Color.Purple', 'Color.Black']
 
 config = configparser.ConfigParser()
 config.read('bot.ini')
@@ -11,7 +12,7 @@ config.read('bot.ini')
 bot = config['BOT']['bot']
 
 script = '''\
-from color import BLUE, GREEN, YELLOW, RED, PURPLE
+from enums import Color
 from testing.game_testing import GameSimulatorTesting
 from ''' + bot + '''.bot import Bot
 
@@ -59,7 +60,7 @@ for msg in messages:
 
         if currentPosition == position:
             if data['type'] == 'clue':
-                if data['clue']['type'] == SUIT:
+                if data['clue']['type'] == Clue.Suit.value:
                     script += '''\
     def test_turn_''' + str(currentTurn) + '''(self):
         # Deck size ''' + str(deckSize) + ''', ''' + names[position] + ''', \
@@ -71,7 +72,7 @@ Clues ''' + str(clues) + ''', Score ''' + str(score) + """
 (''' + str(data['target']) + ''', ''' + colors[data['clue']['value']] + ''')
 
 '''
-                elif data['clue']['type'] == RANK:
+                elif data['clue']['type'] == Clue.Rank.value:
                     script += '''\
     def test_turn_''' + str(currentTurn) + '''(self):
         # Deck size ''' + str(deckSize) + ''', ''' + names[position] + ''', \

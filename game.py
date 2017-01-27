@@ -1,10 +1,6 @@
 import time
 
-from color import card_color, BLACK, BLUE, GREEN, PURPLE, RED, YELLOW, RAINBOW
-
-RANK = 0
-SUIT = 1
-
+from enums import Clue, Suit
 
 class Game:
     def __init__(self, connection, variant, names, botPosition, botCls,
@@ -24,15 +20,7 @@ class Game:
         self.currentPlayer = None
         self.deck = {}
         self.discards = []
-        self.playedCards = {
-            BLACK: [],
-            BLUE: [],
-            GREEN: [],
-            PURPLE: [],
-            RED: [],
-            YELLOW: [],
-            RAINBOW: []
-            }
+        self.playedCards = {c: [] for c in variant.pile_colors}
         self.actionLog = []
 
     def send(self, type, resp):
@@ -80,10 +68,10 @@ class Game:
             # Shows the final cards when game is over
             self.card_revealed(data['order'], data['suit'], data['rank'])
         elif type == 'clue':
-            if data['clue']['type'] == SUIT:
+            if data['clue']['type'] == Clue.Suit.value:
                 self.color_clue_sent(data['giver'], data['target'],
                                      data['clue']['value'], data['list'])
-            elif data['clue']['type'] == RANK:
+            elif data['clue']['type'] == Clue.Rank.value:
                 self.value_clue_sent(data['giver'], data['target'],
                                      data['clue']['value'], data['list'])
             else:
@@ -113,7 +101,7 @@ class Game:
             self.deck[deckidx] = card
             self.bot.drew_card(deckidx)
         else:
-            color = card_color(server_color, self.variant)
+            color = Suit(server_color).color(self.variant)
             card = self.bot.create_player_card(player, deckidx, color, rank)
             self.deck[deckidx] = card
             self.players[player].drew_card(deckidx)
@@ -124,13 +112,13 @@ class Game:
 
     def _card_shown(self, deckidx, server_color, number):
         card = self.deck[deckidx]
-        color = card_color(server_color, self.variant)
+        color = Suit(server_color).color(self.variant)
         card.suit = color
         card.rank = number
 
     def card_played(self, deckidx, server_color, number):
         self._card_shown(deckidx, server_color, number)
-        color = card_color(server_color, self.variant)
+        color = Suit(server_color).color(self.variant)
         self.playedCards[color].append(self.deck[deckidx])
 
         player = self.players[self.currentPlayer]
@@ -158,7 +146,7 @@ class Game:
         self.bot.card_revealed(deckidx)
 
     def color_clue_sent(self, from_, to, server_color, deckidxs):
-        color = card_color(server_color, self.variant)
+        color = Suit(server_color).color(self.variant)
         positions = []
         for i, h in enumerate(self.players[to].hand):
             if h in deckidxs:
