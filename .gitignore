@@ -1,5 +1,6 @@
 *.pyc
 .idea
 bot.ini
+simulator.ini
 user.ini
 game_test.py

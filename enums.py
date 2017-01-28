@@ -42,6 +42,15 @@ class Variant(Enum):
                     Color.Purple, Color.Black]
         raise ValueError
 
+    @property
+    def pile_suits(self):
+        if self is Variant.NoVariant:
+            return [Suit.Blue, Suit.Green, Suit.Yellow, Suit.Red, Suit.Purple]
+        if self in [Variant.BlackSuit, Variant.OneOfEach, Variant.Rainbow]:
+            return [Suit.Blue, Suit.Green, Suit.Yellow, Suit.Red, Suit.Purple,
+                    Suit.Extra]
+        raise ValueError
+
 
 class Color(Flag):
     '''
@@ -217,6 +226,32 @@ class Suit(Enum):
     Purple = 4
     Extra = 5
 
+    def full_name(self, variant):
+        if self is Suit.Blue:
+            return 'Blue'
+        if self is Suit.Green:
+            return 'Green'
+        if self is Suit.Yellow:
+            return 'Yellow'
+        if self is Suit.Red:
+            return 'Red'
+        if self is Suit.Purple:
+            return 'Purple'
+        if self is Suit.Extra:
+            if variant == Variant.Rainbow:
+                return 'Rainbow'
+            elif variant in [Variant.BlackSuit, Variant.OneOfEach]:
+                return 'Black'
+        raise ValueError
+
+    def valid(self, variant):
+        if self in [Suit.Blue, Suit.Green, Suit.Yellow, Suit.Red, Suit.Purple]:
+            return True
+        if variant in [Variant.BlackSuit, Variant.Rainbow, Variant.OneOfEach]:
+            if self == Suit.Extra:
+                return True
+        return False
+
     def color(self, variant):
         if self is Suit.Blue:
             return Color.Blue
@@ -245,6 +280,25 @@ class Rank(Enum):
     R3 = 3
     R4 = 4
     R5 = 5
+
+    @property
+    def num_copies(self):
+        if self is Rank.R1:
+            return 3
+        if self is Rank.R2:
+            return 2
+        if self is Rank.R3:
+            return 2
+        if self is Rank.R4:
+            return 2
+        if self is Rank.R5:
+            return 1
+        raise ValueError
+
+    def valid(self):
+        if self in [Rank.R1, Rank.R2, Rank.R3, Rank.R4, Rank.R5]:
+            return True
+        return False
 
     def value_(self):
         if self is Rank.R1:

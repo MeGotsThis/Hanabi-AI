@@ -68,7 +68,7 @@ def on_message(*args):
         kwargs = botconfig['BOT']
         if botconfig['BOT']['bot'] in botconfig:
             kwargs = ChainMap(botconfig[botconfig['BOT']['bot']],
-                               botconfig['BOT'])
+                              botconfig['BOT'])
         game = Game(conn, Variant(data['variant']), data['names'],
                     data['seat'], bot, **kwargs)
         print('Game Loaded')
