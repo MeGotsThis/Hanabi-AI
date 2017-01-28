@@ -15,7 +15,7 @@ class Card:
             return "Unknown Card"
         return "{color} {number}".format(
             color=self.suit.full_name(self.game.variant),
-            number=self.rank)
+            number=self.rank.value)
 
     def got_positive_color(self, color):
         self.positiveClueColor.append(color)

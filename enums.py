@@ -246,7 +246,7 @@ class Rank(Enum):
     R4 = 4
     R5 = 5
 
-    def value(self):
+    def value_(self):
         if self is Rank.R1:
             return Value.V1
         if self is Rank.R2:

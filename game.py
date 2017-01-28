@@ -102,7 +102,7 @@ class Game:
             self.bot.drew_card(deckidx)
         else:
             color = Suit(color).color(self.variant)
-            value = Rank(value).value()
+            value = Rank(value).value_()
             card = self.bot.create_player_card(player, deckidx, color, value)
             self.deck[deckidx] = card
             self.players[player].drew_card(deckidx)
@@ -114,7 +114,7 @@ class Game:
     def _card_shown(self, deckidx, suit, rank):
         card = self.deck[deckidx]
         color = Suit(suit).color(self.variant)
-        value = Rank(rank).value()
+        value = Rank(rank).value_()
         card.suit = color
         card.rank = value
 
@@ -163,7 +163,7 @@ class Game:
 
     def value_clue_sent(self, from_, to, rank, deckidxs):
         positions = []
-        value = Rank(rank).value()
+        value = Rank(rank).value_()
         for i, h in enumerate(self.players[to].hand):
             if h in deckidxs:
                 self.deck[h].got_positive_value(value)
