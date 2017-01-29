@@ -15,7 +15,7 @@ class Bot(bot.Bot):
     Changes from v2.0
     Saving 2 cards!
     '''
-    BOT_NAME = 'Multi-tag Bot'
+    BOT_NAME = 'Dev Bot'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
         if game.variant != Variant.NoVariant:

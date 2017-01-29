@@ -12,7 +12,7 @@ class Bot(bot.Bot):
     The bot will play all cards that matches minimum playable value
 
     '''
-    BOT_NAME = 'Full Tag Bot'
+    BOT_NAME = 'Full Tag Bot v1.5'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
         if game.variant != Variant.NoVariant:

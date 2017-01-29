@@ -15,7 +15,7 @@ class Bot(bot.Bot):
     Will Clue multiple cards where the newest is playable and next known card
     is playable and etc
     '''
-    BOT_NAME = 'Multi-tag Bot'
+    BOT_NAME = 'Multi-tag Bot v1.0'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
         if game.variant != Variant.NoVariant:

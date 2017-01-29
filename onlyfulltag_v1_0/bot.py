@@ -10,7 +10,7 @@ class Bot(bot.Bot):
     '''
     Full Tag Bot v1.0
     '''
-    BOT_NAME = 'Full Tag Bot'
+    BOT_NAME = 'Full Tag Bot v1.0'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
         if game.variant != Variant.NoVariant:
