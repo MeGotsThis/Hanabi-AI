@@ -34,6 +34,12 @@ if __name__ == '__main__':
     variant = Variant(int(config['SIMULATOR']['variant']))
     players = int(config['SIMULATOR']['players'])
 
+    print('Starting Game Simulator')
+    print('Bot: {}'.format(bot.BOT_NAME))
+    print('Variant: {}'.format(variant.full_name))
+    print('Players: {}'.format(players))
+    print()
+
     start = time.time()
     with Pool(processes=cores) as pool:
         args = variant, players, bot, kwargs
@@ -56,6 +62,7 @@ if __name__ == '__main__':
     duration = time.time() - start
 
     print()
+    print('Bot: {}'.format(bot.BOT_NAME))
     print('Variant: {}'.format(variant.full_name))
     print('Players: {}'.format(players))
     print()
