@@ -119,6 +119,10 @@ class Bot(bot.Bot):
         return value == playableValue
 
     def isValuable(self, color, value):
+        if color is None:
+            print()
+        if value is None:
+            print()
         if self.playedCount[color][value] != value.num_copies - 1:
             return False
         return not self.isWorthless(color, value)
@@ -511,7 +515,7 @@ class Bot(bot.Bot):
                     fitness = 0
                     for h in hand:
                         hcard = self.game.deck[h]
-                        if hcard.rank == card.rank:
+                        if hcard.rank == v:
                             fitness += 1
                     if fitness <= 0:
                         continue
@@ -520,11 +524,12 @@ class Bot(bot.Bot):
                         valueWorthlessHint = v
                         valueWorthlessFitness = fitness
                 for c in self.colors:
+                    fitness = 0
                     if not self.colorComplete[c]:
                         continue
                     for h in hand:
                         hcard = self.game.deck[h]
-                        if hcard.suit & card.suit:
+                        if hcard.suit & c:
                             fitness += 1
                     if fitness <= 0:
                         continue
@@ -550,7 +555,7 @@ class Bot(bot.Bot):
                 elif useValue:
                     hint.value = valueWorthlessHint
                     hint.color = None
-                    hint.fitness = colorWorthlessFitness
+                    hint.fitness = valueWorthlessFitness
                 else:
                     valueBadFitness = valueDuplicate + valueUseless
                     colorBadFitness = colorDuplicate + colorUseless
@@ -561,7 +566,7 @@ class Bot(bot.Bot):
                     else:
                         hint.value = card.rank
                         hint.color = None
-                        hint.fitness = colorBadFitness
+                        hint.fitness = valueBadFitness
 
             if urgent and play is None:
                 playHint = self.bestHintForPlayer(player)
@@ -596,7 +601,7 @@ class Bot(bot.Bot):
                 self.discard_card(discard)
                 return True
 
-        distance = range(2, self.game.numPlayers - 1)
+        distance = range(2, self.game.numPlayers)
         if play:
             distance = range(2, 3)
 
@@ -612,7 +617,8 @@ class Bot(bot.Bot):
             if discardT is None:
                 continue
 
-            cardT = self.game.deck[discardT]
+            targetHand = self.game.players[target].hand
+            cardT = self.game.deck[targetHand[discardT]]
             if not self.isValuable(cardT.suit, cardT.rank):
                 continue
 
@@ -622,8 +628,9 @@ class Bot(bot.Bot):
                  ) = self.nextPlayDiscardIndex(between)
                 needToDiscard = not (playB is None or worthlessB)
                 if needToDiscard and discardB is not None:
-                    cardB = self.game.deck[discardB]
-                    if not self.isValuable(cardB.suit, cardB.value):
+                    betweenHand = self.game.players[between].hand
+                    cardB = self.game.deck[betweenHand[discardB]]
+                    if not self.isValuable(cardB.suit, cardB.rank):
                         needToDiscard = False
                 if needToDiscard:
                     self.discard_card(discard)

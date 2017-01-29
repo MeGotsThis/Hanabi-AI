@@ -485,10 +485,10 @@ class Bot(bot.Bot):
                 if tagged or match:
                     base = 1
                     if v == Value.V5:
-                        base = 50
+                        base = 100
                     elif v < self.lowestPlayableValue:
-                        base = 10
-                    fitness = tagged * base + match * 2 + i
+                        base = 20
+                    fitness = tagged * base + match * 4 + i
                     if fitness > hint.fitness:
                         hint.fitness = fitness
                         hint.to = player
@@ -509,19 +509,25 @@ class Bot(bot.Bot):
                             includeFive = True
                         if card.rank != Value.V5 and card.value is None:
                             includeNonFive = True
-                if tagged:
-                    fitness = 0
-                    if self.colorComplete[c]:
-                        fitness = tagged * 10 + i
-                    if (includeFive and not includeNonFive
-                            and (len(self.game.playedCards[c]) == 4
-                                 or matched == 1)):
-                        fitness = 100 + i
-                    if fitness > hint.fitness:
-                        hint.fitness = fitness
-                        hint.to = player
-                        hint.color = c
-                        hint.value = None
+                for v in self.values[self.lowestPlayableValue - 1:]:
+                    tagged = 0
+                    hasColor = 0
+                    for h in hand:
+                        card = self.game.deck[h]
+                        if card.rank == v:
+                            tagged += 1
+                        if card.color is not None and card.positiveClueColor:
+                            hasColor += 1
+                    if tagged:
+                        if hasColor == tagged:
+                            fitness = tagged + hasColor + i
+                        else:
+                            fitness = tagged + i
+                        if fitness > hint.fitness:
+                            hint.fitness = fitness
+                            hint.to = player
+                            hint.color = None
+                            hint.value = v
         if hint.fitness:
             hint.give(self)
             return True

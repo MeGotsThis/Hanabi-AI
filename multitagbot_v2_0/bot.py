@@ -477,7 +477,7 @@ class Bot(bot.Bot):
                     fitness = 0
                     for h in hand:
                         hcard = self.game.deck[h]
-                        if hcard.rank == card.rank:
+                        if hcard.rank == v:
                             fitness += 1
                     if fitness <= 0:
                         continue
@@ -486,11 +486,12 @@ class Bot(bot.Bot):
                         valueWorthlessHint = v
                         valueWorthlessFitness = fitness
                 for c in self.colors:
+                    fitness = 0
                     if not self.colorComplete[c]:
                         continue
                     for h in hand:
                         hcard = self.game.deck[h]
-                        if hcard.suit & card.suit:
+                        if hcard.suit & c:
                             fitness += 1
                     if fitness <= 0:
                         continue

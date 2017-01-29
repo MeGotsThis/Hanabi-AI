@@ -52,7 +52,7 @@ class CardKnowledge(card.Card):
             if self.playValue is not None:
                 return self.playValue
             if len(self.discardValues) == 1:
-                return self.discardValues
+                return self.discardValues[0]
         return None
 
     def mustBeColor(self, color):

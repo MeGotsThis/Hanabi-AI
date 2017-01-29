@@ -128,10 +128,10 @@ class CardKnowledge(card.Card):
         elif self.value is not None:
             self.worthless = self.value < self.bot.lowestPlayableValue
             if self.value == self.bot.lowestPlayableValue:
-                self.setIsPlayable(True)
+                self.playable = True
         if self.canBePlayable():
-            self.setIsPlayable(True)
-            self.setIsWorthless(False)
+            self.playable = True
+            self.setIsWorthless(None)
 
         self.valuable = None
 
@@ -190,12 +190,15 @@ class CardKnowledge(card.Card):
             if value is not None:
                 self.setMustBeValue(value)
 
+        if not (self.value is None or self.rank is None
+                or self.rank == self.value):
+            print()
         assert color == self.color
         assert value == self.value
         assert (self.color is None or self.suit is None
-                or self.suit == self.color)
+                or self.suit == self.color), (self.suit, self.color)
         assert (self.value is None or self.rank is None
-                or self.rank == self.value)
+                or self.rank == self.value), (self.rank, self.value)
 
         self.update_count(useMyEyesight)
 
