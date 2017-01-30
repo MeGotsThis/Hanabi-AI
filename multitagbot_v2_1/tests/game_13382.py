@@ -1,6 +1,6 @@
 from enums import Color, Value
 from testing.game_testing import GameSimulatorTesting
-from dev.bot import Bot
+from multitagbot_v2_1.bot import Bot
 
 
 class Game13382(GameSimulatorTesting):
