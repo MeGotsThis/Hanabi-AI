@@ -18,7 +18,7 @@ Screenshots:
 ![3 Player Game](https://cdn.discordapp.com/attachments/225437979085242369/270132982487056384/Screen_Shot_2017-01-15_at_1.54.40_AM.png "3 Player Rainbow Game using a Chrome extension")
 ![5 Player Replay](https://cdn.discordapp.com/attachments/90621118829842432/274972552646885376/unknown.png "5 Player No Variant Replay")
 
-Actively, there are two groups who hold different conventions. You can find their discords [here](https://discord.gg/5CCr7FX) and [here](https://discord.gg/FADvkJp) and learn about their conventions. The first discord will also be dedicated for talking about hanabi AI/bots.
+Actively, there are two groups who hold different conventions. You can find their discords [here](https://discord.gg/5CCr7FX) and [here](https://discord.gg/FADvkJp) and learn about their conventions. The first discord has a channel dedicated to talking about hanabi AI bots.
 
 # AI
 
