@@ -12,7 +12,7 @@ config.read('bot.ini')
 bot = config['BOT']['bot']
 
 script = '''\
-from enums import Color, Value, Value
+from enums import Color, Value
 from testing.game_testing import GameSimulatorTesting
 from ''' + bot + '''.bot import Bot
 
