@@ -190,9 +190,6 @@ class CardKnowledge(card.Card):
             if value is not None:
                 self.setMustBeValue(value)
 
-        if not (self.value is None or self.rank is None
-                or self.rank == self.value):
-            print()
         assert color == self.color
         assert value == self.value
         assert (self.color is None or self.suit is None

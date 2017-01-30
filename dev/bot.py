@@ -118,10 +118,6 @@ class Bot(bot.Bot):
         return value == playableValue
 
     def isValuable(self, color, value):
-        if color is None:
-            print()
-        if value is None:
-            print()
         if self.playedCount[color][value] != value.num_copies - 1:
             return False
         return not self.isWorthless(color, value)
