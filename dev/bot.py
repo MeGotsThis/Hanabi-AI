@@ -3,7 +3,7 @@ import time
 from itertools import chain
 
 from bot import bot
-from enums import Value, Variant
+from enums import Color, Value, Variant
 from .card_knowledge import CardKnowledge
 from .hint import Hint
 
@@ -649,11 +649,17 @@ class Bot(bot.Bot):
                     elseWhereValue.append(card.rank)
                 if otherValue is not None and card.rank == otherValue:
                     elseWhereColor.append(card.suit)
-        score = len(self.game.playedCards[color])
+        nextToPlay = len(self.game.playedCards[color]) + 1
+        for v in self.values[nextToPlay-1:self.maxPlayValue[color]]:
+            if self.isCluedSomewhere(color, v, player, strict=True,
+                                     maybe=True):
+                continue
+            nextToPlay = v
+            break
         isNewestGood = None
         needFix = False
         numPlay, numWorthless = 0, 0
-        for v in self.values[score:self.maxPlayValue[color]]:
+        for v in self.values[nextToPlay-1:self.maxPlayValue[color]]:
             if not tagged:
                 break
             if self.isCluedSomewhere(color, v, player, strict=True,
@@ -668,7 +674,7 @@ class Bot(bot.Bot):
                 card = self.game.deck[t]
                 if (card.value == v
                         or (otherPlayer is True and otherValue == card.rank)):
-                    if card.rank == score + 1:
+                    if card.rank == nextToPlay:
                         isNewestGood = True
                     values.append((t, v))
                     tagged.remove(t)
@@ -680,8 +686,8 @@ class Bot(bot.Bot):
                     if (card.value is not None
                         or (otherPlayer is True and otherValue == card.rank)):
                         continue
-                    if v == score + 1:
-                        isNewestGood = card.rank == score + 1
+                    if v == nextToPlay:
+                        isNewestGood = card.rank == nextToPlay
                     if card.rank != v:
                         needFix = True
                     values.append((t, v))

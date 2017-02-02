@@ -14,7 +14,8 @@ class Game13515(GameSimulatorTesting):
         # Deck size 33, Bob, Clues 5, Score 1
         self.load_game(r'games\13515.json', position=1, turn=4, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_value(2, Value.V3)
+        #self.connection.assert_clue_value(2, Value.V3)
+        self.connection.assert_clue_color(2, Color.Yellow)
 
     def test_turn_8(self):
         # Deck size 31, Bob, Clues 3, Score 3
@@ -32,6 +33,9 @@ class Game13515(GameSimulatorTesting):
         # Deck size 26, Bob, Clues 1, Score 7
         self.load_game(r'games\13515.json', position=1, turn=16, botcls=Bot)
         self.send_action()
+        self.assertTrue(self.game.deck[self.bot.hand[0]].cluedAsPlay)
+        self.assertCountEqual(self.game.deck[self.bot.hand[0]].playColors,
+                              [Color.RED])
         self.connection.assert_card_discarded_hand(1)
 
     def test_turn_20(self):
