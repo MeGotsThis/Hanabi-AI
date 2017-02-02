@@ -1167,7 +1167,7 @@ class Bot(bot.Bot):
             for p in range(self.game.numPlayers):
                 for i in range(len(self.game.players[p].hand)):
                     knol = self.game.deck[self.game.players[p].hand[i]]
-                    knol.update(False)
+                    knol.update(p == self.position)
             t = not self.updateLocatedCount()
             done = t and done
             for p in range(self.game.numPlayers):
