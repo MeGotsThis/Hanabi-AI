@@ -4,7 +4,8 @@ from itertools import chain
 
 from bot import bot
 from enums import Color, Value, Variant
-from .card_knowledge import CardKnowledge
+from .card_knowledge import CardKnowledge, CardState
+from .clue_info import ClueState
 from .hint import Hint
 
 
@@ -60,6 +61,7 @@ class Bot(bot.Bot):
         This value is recomputed every turn.
         '''
         self.lowestPlayableValue = 0
+        self.clueLog = [[] for p in range(self.game.numPlayers)]
 
     def create_player_card(self, player, deckPosition, color, value):
         return CardKnowledge(self, player, deckPosition, color, value)
@@ -1093,6 +1095,122 @@ class Bot(bot.Bot):
         self.discard_card(best_index)
         return True
 
+    def reevaluateClue(self, clues, to):
+        for clueState in clues:
+            if clueState.value is not None:
+                critical = clueState.critical
+                possibleColors = clueState.playColors[:]
+                laterColors = clueState.laterColors[:]
+                criticalColors = clueState.discardColors[:]
+                newestIndex = None
+                for i in reversed(clueState.indexes):
+                    if not clueState.wasClued[i]:
+                        newestIndex = i
+                        break
+                newestCard = None
+                if newestIndex is not None:
+                    newestCard = self.game.deck[clueState.hand[newestIndex]]
+                for c in self.colors:
+                    played = self.playedCount[c][clueState.value]
+                    held = self.eyesightCount[c][clueState.value]
+                    score = len(self.game.playedCards[c])
+                    cantBe = played + held == clueState.value.num_copies
+                    cantBe = cantBe or score >= clueState.value
+                    if newestCard is not None:
+                        v = clueState.value
+                        cantBe = cantBe or newestCard.cantBe[c][v]
+                    cantBe = cantBe or self.isCluedSomewhere(
+                        c, clueState.value, to)
+                    if cantBe:
+                        if c in possibleColors:
+                            possibleColors.remove(c)
+                        if c in laterColors:
+                            laterColors.remove(c)
+                        if c in criticalColors:
+                            criticalColors.remove(c)
+                numAllColors = len(possibleColors) + len(laterColors)
+                if critical:
+                    discardCard = self.game.deck[clueState.discardIndex]
+                    for c in criticalColors[:]:
+                        if discardCard.cannotBeColor(c):
+                            criticalColors.remove(c)
+                for h in reversed(clueState.indexes):
+                    card = self.game.deck[clueState.hand[h]]
+                    if card.state != CardState.Hand:
+                        continue
+                    clueIndex = (len(clueState.indexes)
+                                 - clueState.indexes.index(h) - 1)
+                    if card.color is not None:
+                        score = len(self.game.playedCards[card.color])
+                        playingValue = score + 1
+                        if card.value == playingValue:
+                            card.setIsPlayable(True)
+                        elif card.value <= playingValue:
+                            card.setIsWorthless(True)
+                    elif clueState.value < self.lowestPlayableValue:
+                        card.setIsWorthless(True)
+                    else:
+                        card.discardColors.clear()
+                        card.playColors.clear()
+                        if card.color is None:
+                            if clueIndex < len(possibleColors):
+                                for c in possibleColors:
+                                    if card.cannotBeColor(c):
+                                        continue
+                                    card.playColors.append(c)
+                                card.playColorDirect = True
+                            if clueIndex < numAllColors or not card.playColors:
+                                for c in laterColors:
+                                    if card.cannotBeColor(c):
+                                        continue
+                                    card.playColors.append(c)
+                            if (clueIndex >= numAllColors
+                                    or not card.playColors):
+                                card.playWorthless = True
+                for h in clueState.indexes:
+                    card = self.game.deck[clueState.hand[h]]
+                    if card.state != CardState.Hand:
+                        continue
+                    if critical or critical is None:
+                        if not clueState.wasClued[h]:
+                            card.cluedAsDiscard = True
+                            for c in criticalColors:
+                                if card.cannotBeColor(c):
+                                    continue
+                                card.discardColors.append(c)
+                            card.playColors.clear()
+                            card.setIsValuable(True, strict=False)
+                            if not card.discardColors:
+                                card.cluedAsDiscard = False
+                                card.playWorthless = True
+                            if (critical and criticalColors
+                                    and clueState.value != 5):
+                                if len(criticalColors) == 1:
+                                    color = criticalColors[0]
+                                    criticalColors.clear()
+                                    for c in chain(possibleColors,
+                                                   laterColors):
+                                        if c != color:
+                                            criticalColors.append(c)
+                                else:
+                                    for c in chain(possibleColors,
+                                                   laterColors):
+                                        if c not in criticalColors:
+                                            criticalColors.append(c)
+                                critical = None
+                    elif len(clueState.indexes) == 1:
+                        if card.color is None:
+                            card.cluedAsPlay = True
+                        else:
+                            for h in clueState.hand:
+                                taggedCard = self.game.deck[h]
+                                if taggedCard.color == card.color:
+                                    taggedCard.cluedAsPlay = True
+                                    taggedCard.valuable = None
+                                    taggedCard.discardValues.clear()
+                    else:
+                        card.cluedAsPlay = True
+
     def updatePlayableValue(self, player):
         rtnValue = False
         player_ = self.game.players[player]
@@ -1168,6 +1286,21 @@ class Bot(bot.Bot):
                 for i in range(len(self.game.players[p].hand)):
                     knol = self.game.deck[self.game.players[p].hand[i]]
                     knol.update(p == self.position)
+                    if (knol.clued and knol.color is None
+                            and knol.value is not None
+                            and not knol.playColors
+                            and not knol.discardColors
+                            and not (knol.playWorthless or knol.worthless)):
+                        clues = []
+                        for clueState in self.clueLog[p]:
+                            if knol.deckPosition not in clueState.hand:
+                                continue
+                            i = clueState.hand.index(knol.deckPosition)
+                            if i not in clueState.indexes:
+                                continue
+                            clues.append(clueState)
+                        self.reevaluateClue(clues, p)
+                        done = False
             t = not self.updateLocatedCount()
             done = t and done
             for p in range(self.game.numPlayers):
@@ -1184,10 +1317,12 @@ class Bot(bot.Bot):
 
     def pleaseObserveBeforeDiscard(self, from_, card_index, deckIdx):
         card = self.game.deck[deckIdx]
+        card.state = CardState.Discard
         self.seePublicCard(card.suit, card.rank)
 
     def pleaseObserveBeforePlay(self, from_, card_index, deckIdx):
         card = self.game.deck[deckIdx]
+        card.state = CardState.Play
         self.seePublicCard(card.suit, card.rank)
 
     def matchCriticalCardColor(self, color):
@@ -1270,12 +1405,12 @@ class Bot(bot.Bot):
             possibleValues.append(v)
 
         numToComplete = self.maxPlayValue[color] - score
-        criticalValues = []
+        criticalValues = self.matchCriticalCardColor(color)
         criticalClue = not worthless and discard in card_indices
         if not worthless and discard in card_indices:
-            if numToComplete > len(card_indices):
-                criticalValues = self.matchCriticalCardColor(color)
-            criticalClue = bool(criticalValues)
+            criticalClue = bool(criticalValues
+                                and numToComplete > len(card_indices))
+        criticalState = criticalClue
 
         wasClued = [None] * len(hand)
         for i, h in reversed(list(enumerate(hand))):
@@ -1298,7 +1433,7 @@ class Bot(bot.Bot):
         for i, h in enumerate(hand):
             knol = self.game.deck[h]
             if i in card_indices:
-                if criticalClue or criticalClue is None:
+                if criticalState or criticalState is None:
                     if not wasClued[i]:
                         knol.cluedAsDiscard = True
                         for v in criticalValues:
@@ -1307,7 +1442,7 @@ class Bot(bot.Bot):
                             knol.discardValues.append(v)
                         knol.playValue = None
                         knol.setIsValuable(True, strict=False)
-                        if criticalClue:
+                        if criticalState:
                             if len(criticalValues) == 1:
                                 value = criticalValues[0]
                                 criticalValues.clear()
@@ -1318,19 +1453,28 @@ class Bot(bot.Bot):
                                 for v in possibleValues:
                                     if v not in criticalValues:
                                         criticalValues.append(v)
-                            criticalClue = None
+                            criticalState = None
                 else:
                     knol.cluedAsPlay = True
         for h in hand:
             knol = self.game.deck[h]
             knol.update(False)
 
+        clueLog = ClueState(self.game.turnCount, criticalClue,
+                            hand[:], card_indices[:], wasClued[:],
+                            discard, worthless,
+                            color=color, discard_values=criticalValues[:])
+        self.clueLog[to].append(clueLog)
+
     def pleaseObserveValueHint(self, from_, to, value, card_indices):
         hand = self.game.players[to].hand
         possibleColors = []
         laterColors = []
+        newestCard = self.game.deck[hand[card_indices[-1]]]
         for c in self.colors:
             if self.isCluedSomewhere(c, value, to, maybe=True):
+                continue
+            if newestCard.cantBe[c][value]:
                 continue
             match = False
             for i in card_indices:
@@ -1354,19 +1498,26 @@ class Bot(bot.Bot):
                 possibleColors.append(c)
         playable, discard, worthless = self.nextPlayDiscardIndex(to)
 
-        criticalColors = []
+        criticalColors = self.matchCriticalCardValue(value)
         criticalClue = ((not worthless and discard in card_indices)
                         or value == Value.V5)
-        if criticalClue:
-            criticalColors = self.matchCriticalCardValue(value)
-            criticalClue = bool(criticalColors)
+        if criticalClue and discard is not None:
+            discardCard = self.game.deck[hand[discard]]
+            for c in criticalColors:
+                if not discardCard.cannotBeColor(c):
+                    criticalClue = True
+                    break
+            else:
+                criticalClue = False
+        criticalState = criticalClue
 
+        numAllColors = len(possibleColors) + len(laterColors)
         wasClued = [None] * len(hand)
-        count = 0
         for i, h in reversed(list(enumerate(hand))):
             knol = self.game.deck[h]
             if i in card_indices:
                 wasClued[i] = knol.clued
+                clueIndex = len(card_indices) - card_indices.index(i) - 1
                 knol.clued = True
                 knol.setMustBeValue(value)
                 if knol.color is not None:
@@ -1381,19 +1532,17 @@ class Bot(bot.Bot):
                     knol.discardColors.clear()
                     knol.playColors.clear()
                     if knol.color is None:
-                        if count < len(possibleColors):
+                        if clueIndex < len(possibleColors):
                             for c in possibleColors:
                                 if knol.cannotBeColor(c):
                                     continue
                                 knol.playColors.append(c)
                             knol.playColorDirect = True
-                            count += 1
-                        elif count < len(possibleColors) + len(laterColors):
+                        elif clueIndex < numAllColors:
                             for c in laterColors:
                                 if knol.cannotBeColor(c):
                                     continue
                                 knol.playColors.append(c)
-                            count += 1
                         else:
                             knol.playWorthless = True
             else:
@@ -1401,7 +1550,7 @@ class Bot(bot.Bot):
         for i, h in enumerate(hand):
             knol = self.game.deck[h]
             if i in card_indices:
-                if criticalClue or criticalClue is None:
+                if criticalState or criticalState is None:
                     if not wasClued[i]:
                         knol.cluedAsDiscard = True
                         for c in criticalColors:
@@ -1410,7 +1559,7 @@ class Bot(bot.Bot):
                             knol.discardColors.append(c)
                         knol.playColors.clear()
                         knol.setIsValuable(True, strict=False)
-                        if criticalClue and value != 5:
+                        if criticalState and value != 5:
                             if len(criticalColors) == 1:
                                 color = criticalColors[0]
                                 criticalColors.clear()
@@ -1421,7 +1570,7 @@ class Bot(bot.Bot):
                                 for c in chain(possibleColors, laterColors):
                                     if c not in criticalColors:
                                         criticalColors.append(c)
-                            criticalClue = None
+                            criticalState = None
                 elif len(card_indices) == 1:
                     if knol.color is None:
                         knol.cluedAsPlay = True
@@ -1437,6 +1586,15 @@ class Bot(bot.Bot):
         for h in hand:
             knol = self.game.deck[h]
             knol.update(False)
+
+        clueLog = ClueState(self.game.turnCount, criticalClue,
+                            hand[:], card_indices[:], wasClued[:],
+                            discard, worthless,
+                            value=value,
+                            play_colors=possibleColors[:],
+                            later_colors=laterColors[:],
+                            discard_color=criticalColors[:])
+        self.clueLog[to].append(clueLog)
 
     def pleaseObserveAfterMove(self):
         pass

@@ -35,14 +35,16 @@ class Game13515(GameSimulatorTesting):
         self.send_action()
         self.assertTrue(self.game.deck[self.bot.hand[0]].cluedAsPlay)
         self.assertCountEqual(self.game.deck[self.bot.hand[0]].playColors,
-                              [Color.RED])
-        self.connection.assert_card_discarded_hand(1)
+                              [Color.Red])
+        #self.connection.assert_card_discarded_hand(1)
+        self.connection.assert_clue_color(3, Color.Red)
 
     def test_turn_20(self):
         # Deck size 23, Bob, Clues 2, Score 8
         self.load_game(r'games\13515.json', position=1, turn=20, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(1)
+        #self.connection.assert_card_discarded_hand(1)
+        self.connection.assert_card_played_hand(0)
 
     def test_turn_24(self):
         # Deck size 22, Bob, Clues 0, Score 8
@@ -54,25 +56,44 @@ class Game13515(GameSimulatorTesting):
         # Deck size 19, Bob, Clues 0, Score 10
         self.load_game(r'games\13515.json', position=1, turn=28, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(3)
+        #self.connection.assert_card_discarded_hand(3)
+        self.connection.assert_card_played_hand(0)
+
+    def test_turn_31_2(self):
+        # Deck size 17, Bob, Clues 0, Score 11
+        self.load_game(r'games\13515.json', position=2, turn=31, botcls=Bot)
+        self.assertCountEqual(self.game.deck[self.bot.hand[3]].playColors,
+                              [Color.Green])
+        self.assertCountEqual(self.game.deck[self.bot.hand[2]].playColors,
+                              [Color.Purple])
 
     def test_turn_32(self):
         # Deck size 16, Bob, Clues 1, Score 11
         self.load_game(r'games\13515.json', position=1, turn=32, botcls=Bot)
         self.send_action()
         self.connection.assert_card_played_hand(2)
+        self.assertTrue(self.game.deck[self.bot.hand[0]].playWorthless)
+
+    def test_turn_32_2(self):
+        # Deck size 16, Bob, Clues 1, Score 11
+        self.load_game(r'games\13515.json', position=2, turn=32, botcls=Bot)
+        self.assertCountEqual(self.game.deck[self.bot.hand[3]].playColors,
+                              [Color.Purple])
+        self.assertTrue(self.game.deck[self.bot.hand[2]].playWorthless)
 
     def test_turn_36(self):
         # Deck size 13, Bob, Clues 2, Score 13
         self.load_game(r'games\13515.json', position=1, turn=36, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(2)
+        #self.connection.assert_card_discarded_hand(2)
+        self.connection.assert_clue_color(3, Color.Red)
 
     def test_turn_40(self):
         # Deck size 10, Bob, Clues 3, Score 14
         self.load_game(r'games\13515.json', position=1, turn=40, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(2)
+        #self.connection.assert_card_discarded_hand(2)
+        self.connection.assert_clue_color(3, Color.Red)
 
     def test_turn_44(self):
         # Deck size 8, Bob, Clues 2, Score 15

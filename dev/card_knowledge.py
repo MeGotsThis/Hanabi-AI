@@ -1,11 +1,20 @@
+from enum import Enum, auto
+
 from bot import card
 from enums import Value
+
+
+class CardState(Enum):
+    Hand = auto()
+    Play = auto()
+    Discard = auto()
 
 
 class CardKnowledge(card.Card):
     def __init__(self, bot, player, deckPosition, suit, rank):
         super().__init__(bot.game, player, deckPosition, suit, rank)
         self.bot = bot
+        self.state = CardState.Hand
         self.cantBe = {c: [False] * 6 for c in self.bot.colors}
         self.color = None
         self.value = None
@@ -188,12 +197,15 @@ class CardKnowledge(card.Card):
                 if not self.playWorthless and self.clued:
                     self.setIsPlayable(True, strict=False)
                     self.setIsWorthless(None)
+                else:
+                    self.setIsPlayable(False, strict=False)
             else:
                 self.setIsPlayable(None)
                 self.setIsWorthless(None)
             self.playValue = None
             if self.worthless:
                 self.playColors.clear()
+                self.discardColors.clear()
             else:
                 for c in self.playColors[:]:
                     if self.cannotBeColor(c):
@@ -205,16 +217,16 @@ class CardKnowledge(card.Card):
                     if len(self.game.playedCards[c]) >= self.value:
                         self.playColors.remove(c)
                         continue
-            for c in self.discardColors[:]:
-                if self.cannotBeColor(c):
-                    self.discardColors.remove(c)
-                    continue
-                if self.bot.isCluedSomewhere(c, self.value, self.player):
-                    self.discardColors.remove(c)
-                    continue
-                if len(self.game.playedCards[c]) >= self.value:
-                    self.discardColors.remove(c)
-                    continue
+                for c in self.discardColors[:]:
+                    if self.cannotBeColor(c):
+                        self.discardColors.remove(c)
+                        continue
+                    if self.bot.isCluedSomewhere(c, self.value, self.player):
+                        self.discardColors.remove(c)
+                        continue
+                    if len(self.game.playedCards[c]) >= self.value:
+                        self.discardColors.remove(c)
+                        continue
             self.playValue = None
             self.discardValues.clear()
         if self.playable is None and self.canBePlayable():
@@ -314,12 +326,15 @@ class CardKnowledge(card.Card):
             if value is not None:
                 self.setMustBeValue(value)
 
+        if not (self.value is None or self.rank is None
+                or self.rank == self.value):
+            print()
         assert color == self.color
         assert value == self.value
         assert (self.color is None or self.suit is None
-                or self.suit == self.color)
+                or self.suit == self.color), (self.suit, self.color)
         assert (self.value is None or self.rank is None
-                or self.rank == self.value)
+                or self.rank == self.value), (self.rank, self.value)
 
         self.update_count(useMyEyesight)
 
@@ -333,7 +348,7 @@ class CardKnowledge(card.Card):
                     total = v.num_copies
                     played = self.bot.playedCount[c][v]
                     if useMyEyesight:
-                        held = self.bot.eyeSightCount[c][v]
+                        held = self.bot.eyesightCount[c][v]
                     else:
                         held = self.bot.locatedCount[c][v]
                     assert played + held <= total

@@ -45,12 +45,16 @@ class Game13516(GameSimulatorTesting):
         self.load_game(r'games\13516.json', position=3, turn=27, botcls=Bot)
         self.send_action()
         self.connection.assert_card_played_hand(3)
+        self.assertTrue(self.game.deck[self.bot.hand[0]].playWorthless)
 
     def test_turn_31(self):
         # Deck size 17, Donald, Clues 0, Score 11
         self.load_game(r'games\13516.json', position=3, turn=31, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_played_hand(0)
+        #self.connection.assert_card_played_hand(0)
+        self.assertTrue(self.game.deck[self.bot.hand[0]].playWorthless)
+        card = self.game.deck[self.bot.hand[0]]
+        self.connection.assert_card_discarded_hand(0)
 
     def test_turn_35(self):
         # Deck size 14, Donald, Clues 1, Score 12
