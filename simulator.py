@@ -3,6 +3,7 @@ import importlib
 import time
 
 from collections import ChainMap
+from datetime import datetime
 from multiprocessing import Pool
 
 from server import ServerGame
@@ -38,6 +39,7 @@ if __name__ == '__main__':
     print('Bot: {}'.format(bot.BOT_NAME))
     print('Variant: {}'.format(variant.full_name))
     print('Players: {}'.format(players))
+    print('Started: {}'.format(datetime.now()))
     print()
 
     start = time.time()
@@ -56,9 +58,11 @@ if __name__ == '__main__':
             scores = doneScores if not game.loss else lossScores
             scores[game.score] += 1
             if completed % check == 0:
-                print('{}/{} completed'.format(completed, runs))
+                print('{}/{} completed, Current Time: {}'.format(
+                    completed, runs, datetime.now()))
         if completed % check != 0:
-            print('{}/{} completed'.format(completed, runs))
+            print('{}/{} completed, Current Time: {}'.format(
+                completed, runs, datetime.now()))
     duration = time.time() - start
 
     print()
