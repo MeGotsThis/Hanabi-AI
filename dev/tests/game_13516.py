@@ -32,7 +32,17 @@ class Game13516(GameSimulatorTesting):
         # Deck size 25, Donald, Clues 2, Score 5
         self.load_game(r'games\13516.json', position=3, turn=19, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(2, Color.Yellow)
+        #self.connection.assert_clue_color(2, Color.Yellow)
+        self.assertTrue(
+            self.bot.doesCardMatchHand(self.game.players[2].hand[3]))
+        self.assertFalse(
+            self.bot.doesCardMatchHand(self.game.players[2].hand[1]))
+        self.assertTrue(
+            self.bot.doesCardMatchHand(self.game.players[1].hand[3]))
+        self.assertFalse(
+            self.bot.doesCardMatchHand(self.game.players[1].hand[1]))
+        self.connection.assert_not_clue_color(2, Color.Yellow)
+        self.connection.assert_card_discarded_hand(2)
 
     def test_turn_23(self):
         # Deck size 23, Donald, Clues 0, Score 7

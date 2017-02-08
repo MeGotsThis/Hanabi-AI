@@ -383,13 +383,8 @@ class Bot(bot.Bot):
             card = self.game.deck[hand[discard]]
             valuable = self.isValuable(card.suit, card.rank)
             if not valuable and card.rank == 2 and self.is2Valuable(card.suit):
-                was2Clued = False
-                for h in self.hand:
-                    hcard = self.game.deck[h]
-                    if hcard.positiveClueValue == 2:
-                        was2Clued = True
-                        break
-                if self.game.numPlayers == 2 or not was2Clued:
+                if (self.game.numPlayers == 2
+                        or self.doesCardMatchHand(hand[discard])):
                     valuable = None
             if valuable is False:
                 continue
@@ -410,6 +405,7 @@ class Bot(bot.Bot):
             valueFitness = 0
             colorFitness = 0
 
+            valueMDuplicate = 0
             valueDuplicate = 0
             valueClarify = 0
             valueUseless = 0
@@ -435,6 +431,8 @@ class Bot(bot.Bot):
                         if (hcard.maybeColor == tcard.suit
                                 and hcard.maybeValue == tcard.rank):
                             valueDuplicate += 1
+                if self.doesCardMatchHand(tcard.deckPosition):
+                    valueMDuplicate += 1
 
                 for j in range(i):
                     if (tcard.suit == valueTags[j].suit
@@ -452,8 +450,10 @@ class Bot(bot.Bot):
                 valueFitness += valueClarify - len(matchColors)
             elif valueDuplicate == 0 and valueUseless == 0:
                 valueFitness += valueNewSaves * 20 + valueOther * 3
+                valueFitness -= valueMDuplicate * 20
                 valueFitness += valueClarify - len(matchColors)
 
+            colorMDuplicate = 0
             colorDuplicate = 0
             colorClarify = 0
             colorUseless = 0
@@ -481,6 +481,8 @@ class Bot(bot.Bot):
                     if (tcard.suit == colorTags[j].suit
                             and tcard.rank == colorTags[j].rank):
                         colorDuplicate += 1
+                if self.doesCardMatchHand(tcard.deckPosition):
+                    colorMDuplicate += 1
             if colorSave5 and discard + 1 < len(hand):
                 nextCard = self.game.deck[hand[discard + 1]]
                 isSave5NextToDiscard = (nextCard.suit == card.suit
@@ -489,6 +491,7 @@ class Bot(bot.Bot):
                 if not (card.rank == Value.V5 and colorNewSaves):
                     colorFitness = colorNewSaves * 20 + colorOther * 3
                     colorFitness += (colorSave5 + isSave5NextToDiscard) * 10
+                    colorFitness -= colorMDuplicate * 20
                     colorFitness -= len(matchValues)
 
             hint = Hint()
@@ -660,7 +663,7 @@ class Bot(bot.Bot):
             break
         isNewestGood = None
         needFix = False
-        numPlay, numWorthless = 0, 0
+        numPlay, numWorthless, maybeDuplicate = 0, 0, 0
         for v in self.values[nextToPlay-1:self.maxPlayValue[color]]:
             if not tagged:
                 break
@@ -700,7 +703,11 @@ class Bot(bot.Bot):
             for t in tagged:
                 values.append((t, None))
                 numWorthless += 1
-        return values, numPlay, numWorthless, isNewestGood, needFix
+        for deckIdx, value in values:
+            if self.doesCardMatchHand(deckIdx):
+                maybeDuplicate += 1
+        return (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
+                needFix)
 
     def playOrderColorClue(self, player, color):
         assert player != self.position
@@ -718,17 +725,19 @@ class Bot(bot.Bot):
                 if card.value is not None:
                     if card.playColorDirect or card.playable:
                         badClarify += 1
-        (playOrder, numPlay, numWorthless, isNewestGood,
-         needFix) = self.valueOrderFromColor(color, tagged, player)
+        (playOrder, numPlay, numWorthless, maybeDuplicate, isNewestGood,
+         needFix
+         ) = self.valueOrderFromColor(color, tagged, player)
 
         fixPlayer, fixColor, fixValue = None, None, None
         if needFix:
             for tagV in self.values:
                 # Test Fix Clues
-                (playOrder_, numPlay_, numWorthless_, isNewestGood_,
-                 needFix_) = self.valueOrderFromColor(color, tagged, player,
-                                                      otherPlayer=True,
-                                                      otherValue=tagV)
+                (playOrder_, numPlay_, numWorthless_, maybeDuplicate_,
+                 isNewestGood_, needFix_
+                 ) = self.valueOrderFromColor(color, tagged, player,
+                                              otherPlayer=True,
+                                              otherValue=tagV)
 
                 if not needFix_:
                     fixPlayer = player
@@ -741,9 +750,10 @@ class Bot(bot.Bot):
                 if p == player or p == self.position:
                     continue
                 (playOrder_, numPlay_, numWorthless_, isNewestGood_,
-                 needFix_) = self.valueOrderFromColor(color, tagged, player,
-                                                      otherPlayer=p,
-                                                      otherValue=tagV)
+                 maybeDuplicate_, needFix_
+                 ) = self.valueOrderFromColor(color, tagged, player,
+                                              otherPlayer=p,
+                                              otherValue=tagV)
 
                 if not needFix_:
                     fixPlayer = player
@@ -751,8 +761,10 @@ class Bot(bot.Bot):
                     if fixValue is None:
                         fixValue = []
                     fixValue.append(tagV)
-        return (playOrder, numPlay, numWorthless, isNewestGood, needFix,
-                numNewTagged, badClarify, fixPlayer, fixColor, fixValue)
+        return (playOrder,
+                numPlay, numWorthless, maybeDuplicate, isNewestGood,
+                needFix, numNewTagged, badClarify,
+                fixPlayer, fixColor, fixValue)
 
     def playOrderValueClue(self, player, value):
         assert player != self.position
@@ -796,13 +808,15 @@ class Bot(bot.Bot):
         futureOrder = []
         worthlessOrder = []
         colorUsed = []
-        numPlay, numFuture, numWorthless = 0, 0, 0
+        numPlay, numFuture, numWorthless, maybeDuplicate = 0, 0, 0, 0
         numPlayMismatch = 0
         numFutureMismatch = 0
         numCompleteMismatch = 0
         # Check fully tagged cards first
         for t in tagged:
             card = self.game.deck[t]
+            if self.doesCardMatchHand(t):
+                maybeDuplicate += 1
             color = card.maybeColor
             if color is not None:
                 if color in playColors:
@@ -853,9 +867,43 @@ class Bot(bot.Bot):
                     numWorthless += 1
 
         return (playOrder + futureOrder + worthlessOrder,
-                numPlay, numFuture, numWorthless,
+                numPlay, numFuture, numWorthless, maybeDuplicate,
                 numPlayMismatch, numFutureMismatch, numCompleteMismatch,
                 numNewTagged)
+
+    def doesCardMatchHand(self, deckIdx):
+        deckCard = self.game.deck[deckIdx]
+        assert deckCard.suit is not None
+        assert deckCard.rank is not None
+        if self.colorComplete[deckCard.suit]:
+            return False
+        if deckCard.rank == Value.V5:
+            return False
+        for h in self.hand:
+            card = self.game.deck[h]
+            if not card.clued:
+                continue
+            if card.worthless or card.playWorthless:
+                continue
+            if card.cantBe[deckCard.suit][deckCard.rank]:
+                continue
+            if card.color is not None and card.value is not None:
+                continue
+            if card.color == deckCard.suit:
+                if not card.cluedAsDiscard:
+                    continue
+                if card.maybeValue is not None:
+                    continue
+                if deckCard.rank in card.possibleValues:
+                    return True
+            if card.value == deckCard.rank:
+                if card.playColorDirect:
+                    continue
+                if card.maybeColor is not None:
+                    continue
+                if deckCard.suit in card.possibleColors:
+                    return True
+        return False
 
     def bestHintForPlayer(self, player):
         assert player != self.position
@@ -905,13 +953,15 @@ class Bot(bot.Bot):
             colorFitness = 0
 
             # Decision Here
-            (values, numPlay, numWorthless, isNewestGood, needFix,
-             numNewTagged, badClarify, fixPlayer, fixColor,
-             fixValue) = self.playOrderColorClue(player, c)
+            (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
+             needFix, numNewTagged, badClarify,
+             fixPlayer, fixColor, fixValue
+             ) = self.playOrderColorClue(player, c)
+            goodTag = numNewTagged - badClarify - numWorthless
             needToPlay = self.maxPlayValue[c] - len(self.game.playedCards[c])
             if (not needFix and isNewestGood and values[0][1] is not None
-                and (numNewTagged - badClarify - numWorthless > 0
-                     or badClarify == needToPlay)):
+                and maybeDuplicate == 0
+                and (goodTag > 0 or badClarify == needToPlay)):
                 baseValue, baseSave = 22, 11
                 colorFitness = (numPlay * baseValue
                                 + numWorthless
@@ -944,10 +994,13 @@ class Bot(bot.Bot):
             if v < self.lowestPlayableValue:
                 pass
             else:
-                (playOrder, numPlay, numFuture, numWorthless,
+                (playOrder, numPlay, numFuture, numWorthless, maybeDuplicate,
                  numPlayMismatch, numFutureMismatch, numCompleteMismatch,
-                 numNewTagged) = self.playOrderValueClue(player, v)
-                if (numNewTagged >= 1 and numPlay >= 1 and numPlayMismatch == 0
+                 numNewTagged
+                 ) = self.playOrderValueClue(player, v)
+                if (numNewTagged >= 1 and numPlay >= 1
+                        and maybeDuplicate == 0
+                        and numPlayMismatch == 0
                         and numFutureMismatch == 0
                         and numCompleteMismatch == 0):
                     baseValue, baseFuture, baseSave = 20, 7, 20
