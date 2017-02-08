@@ -16,10 +16,8 @@ def run(args):
     game.run_game()
     return game
 
-if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('simulator.ini')
 
+def simulate(config, mapFunc):
     bot = importlib.import_module(config['BOT']['bot'] + '.bot').Bot
 
     kwargs = config['BOT']
@@ -27,9 +25,6 @@ if __name__ == '__main__':
         kwargs = ChainMap(config[config['BOT']['bot']],
                           config['BOT'])
 
-    cores = None
-    if config['SIMULATOR']['cores']:
-        cores = int(config['SIMULATOR']['cores']) or None
     runs = int(config['SIMULATOR']['runs'])
 
     variant = Variant(int(config['SIMULATOR']['variant']))
@@ -94,3 +89,19 @@ if __name__ == '__main__':
         print('Score {}: {}'.format(score, lossScores[score]))
     print()
     print('Time to Complete: {:.6f}'.format(duration))
+
+
+if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('simulator.ini')
+
+    cores = None
+    if config['SIMULATOR']['cores']:
+        cores = int(config['SIMULATOR']['cores']) or None
+
+    if cores > 1:
+        with Pool(processes=cores) as pool:
+            simulate(config, pool.imap_unordered)
+    else:
+        simulate(config, map)
+
