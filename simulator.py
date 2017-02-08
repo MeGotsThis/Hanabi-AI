@@ -26,9 +26,15 @@ def simulate(config, mapFunc):
                           config['BOT'])
 
     runs = int(config['SIMULATOR']['runs'])
+    if runs < 0:
+        print('Invalid number of runs')
+        return
 
     variant = Variant(int(config['SIMULATOR']['variant']))
     players = int(config['SIMULATOR']['players'])
+    if players < 2 or players > 5:
+        print('Invalid number of players')
+        return
 
     print('Starting Game Simulator')
     print('Bot: {}'.format(bot.BOT_NAME))
