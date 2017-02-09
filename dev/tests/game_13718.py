@@ -113,16 +113,6 @@ class Game13718(GameSimulatorTesting):
         #self.connection.assert_card_played_hand(0)
         self.connection.assert_card_discarded_hand(0)
 
-    def test_turn_35(self):
-        # Deck size 21, Bob, Clues 3, Score 10
-        self.load_game(r'games\13718.json', position=0, turn=34, botcls=Bot)
-        self.send_discard_card(0, Color.Green, Value.V4)
-        self.send_action()
-        self.assertIsNotNone(self.bot.discardPlay)
-        self.connection.assert_card_played_hand(0)
-        self.send_play_card(0, Color.Purple, Value.V5)
-        self.assertIsNone(self.bot.discardPlay)
-
     def test_turn_36(self):
         # Deck size 19, Bob, Clues 3, Score 12
         self.load_game(r'games\13718.json', position=1, turn=36, botcls=Bot)

@@ -1,18 +1,12 @@
 import time
 
 from itertools import chain
-from typing import NamedTuple
 
 from bot import bot
 from enums import Color, Value, Variant
 from .card_knowledge import CardKnowledge, CardState
 from .clue_info import ClueState
 from .hint import Hint
-
-
-class CardInfo(NamedTuple):
-    color: Color
-    value: Value
 
 
 class Bot(bot.Bot):
@@ -67,11 +61,6 @@ class Bot(bot.Bot):
         This value is recomputed every turn.
         '''
         self.lowestPlayableValue = 0
-
-        self.discardPlay = None
-        self.discardPlayFrom = None
-        self.discardPlayHandIndex = None
-
         self.clueLog = [[] for p in range(self.game.numPlayers)]
 
     def create_player_card(self, player, deckPosition, color, value):
@@ -85,9 +74,6 @@ class Bot(bot.Bot):
 
     def card_discarded(self, deckIdx, position):
         self.pleaseObserveBeforeDiscard(self.position, position, deckIdx)
-
-    def striked(self, player):
-        self.pleaseObserveStrike(player)
 
     def someone_played(self, player, deckIdx, position):
         self.pleaseObserveBeforePlay(player, position, deckIdx)
@@ -1035,30 +1021,6 @@ class Bot(bot.Bot):
         return best_so_far
 
     def bestCardToPlay(self):
-        if self.discardPlay:
-            playIndex = None
-            setIndex = False
-            for i, h in reversed(list(enumerate(self.hand))):
-                card = self.game.deck[h]
-                if not card.clued:
-                    if not setIndex:
-                        if (self.discardPlayHandIndex is None
-                                or i < self.discardPlayHandIndex):
-                            self.discardPlayHandIndex = i
-                            setIndex = True
-                    continue
-                colorGood = (card.color is not None
-                             and card.color & self.discardPlay.color)
-                valueGood = (card.value is not None
-                             and card.value == self.discardPlay.value)
-                if colorGood or valueGood:
-                    if playIndex is None:
-                        playIndex = i
-            if playIndex is not None:
-                return playIndex
-            if self.discardPlayHandIndex is not None:
-                return self.discardPlayHandIndex
-
         play, discard, worthless = self.nextPlayDiscardIndex(self.position)
         return play
 
@@ -1408,39 +1370,11 @@ class Bot(bot.Bot):
         card = self.game.deck[deckIdx]
         card.state = CardState.Discard
         self.seePublicCard(card.suit, card.rank)
-        if from_ != self.position and card.playable:
-            seen = self.playedCount[card.suit][card.rank]
-            seen += self.eyesightCount[card.suit][card.rank] - 1
-            clued = self.isCluedSomewhere(card.suit, card.rank, self.position,
-                                          maybe=True)
-            if seen < card.rank.num_copies and not clued:
-                self.discardPlay = CardInfo(card.suit, card.rank)
-                self.discardPlayFrom = from_
 
     def pleaseObserveBeforePlay(self, from_, card_index, deckIdx):
         card = self.game.deck[deckIdx]
         card.state = CardState.Play
         self.seePublicCard(card.suit, card.rank)
-        if self.discardPlay is not None:
-            if from_ == self.position:
-                if (card.suit == self.discardPlay.color
-                        and card.rank == self.discardPlay.value):
-                    self.discardPlay = None
-                    self.discardPlayHandIndex = None
-                    self.discardPlayFrom = None
-            elif self.discardPlayFrom != from_:
-                if self.game.players[from_].discardPlay is None:
-                    self.discardPlay = None
-                    self.discardPlayHandIndex = None
-                    self.discardPlayFrom = None
-
-    def pleaseObserveStrike(self, from_):
-        if self.discardPlay is not None:
-            if from_ != self.position and from_ != self.discardPlayFrom:
-                if self.game.players[from_].discardPlay is None:
-                    self.discardPlay = None
-                    self.discardPlayHandIndex = None
-                    self.discardPlayFrom = None
 
     def matchCriticalCardColor(self, color):
         if self.colorComplete[color]:

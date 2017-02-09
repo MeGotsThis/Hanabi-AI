@@ -125,11 +125,11 @@ class Game:
 
         player = self.players[self.currentPlayer]
         pos = player.hand.index(deckidx)
-        player.played_card(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_played(deckidx, pos)
         else:
             self.bot.someone_played(self.currentPlayer, deckidx, pos)
+        player.played_card(deckidx)
 
     def card_discarded(self, deckidx, suit, variant):
         self._card_shown(deckidx, suit, variant)
@@ -137,11 +137,11 @@ class Game:
 
         player = self.players[self.currentPlayer]
         pos = player.hand.index(deckidx)
-        player.discarded_card(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_discarded(deckidx, pos)
         else:
             self.bot.someone_discard(self.currentPlayer, deckidx, pos)
+        player.discarded_card(deckidx)
 
     def card_revealed(self, deckidx, server_color, number):
         self._card_shown(deckidx, server_color, number)
