@@ -72,6 +72,14 @@ class Game13516(GameSimulatorTesting):
         self.send_action()
         self.connection.assert_clue_value(0, Value.V3)
 
+    def test_turn_35_alternate(self):
+        # Deck size 14, Donald, Clues 1, Score 12
+        self.load_game(r'games\13516.json', position=3, turn=33, botcls=Bot)
+        self.send_value_clue(3, Value.V3)
+        self.send_discard_card(3, Color.Blue, Value.V2)
+        self.send_action()
+        self.connection.assert_clue_color(0, Color.Red)
+
     def test_turn_39(self):
         # Deck size 12, Donald, Clues 0, Score 13
         self.load_game(r'games\13516.json', position=3, turn=39, botcls=Bot)

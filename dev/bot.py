@@ -897,8 +897,6 @@ class Bot(bot.Bot):
                 if deckCard.rank in card.possibleValues:
                     return True
             if card.value == deckCard.rank:
-                if card.playColorDirect:
-                    continue
                 if card.maybeColor is not None:
                     continue
                 if deckCard.suit in card.possibleColors:
