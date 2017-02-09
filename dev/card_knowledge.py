@@ -181,10 +181,15 @@ class CardKnowledge(card.Card):
 
         if self.color is not None and self.value is not None:
             score = len(self.game.playedCards[self.color])
-            self.setIsPlayable(score + 1 == self.value)
-            self.setIsWorthless(
-                self.value <= len(self.game.playedCards[self.color])
-                or self.value > self.bot.maxPlayValue[self.color])
+            if self.bot.isCluedSomewhere(self.color, self.value, self.player,
+                                         strict=True, maybe=True):
+                self.worthless = True
+                self.playable = False
+            else:
+                self.setIsPlayable(score + 1 == self.value)
+                self.setIsWorthless(
+                    self.value <= len(self.game.playedCards[self.color])
+                    or self.value > self.bot.maxPlayValue[self.color])
 
             self.playColors.clear()
             self.discardColors.clear()

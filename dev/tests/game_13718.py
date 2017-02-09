@@ -110,7 +110,8 @@ class Game13718(GameSimulatorTesting):
         # Deck size 21, Bob, Clues 3, Score 10
         self.load_game(r'games\13718.json', position=1, turn=34, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_played_hand(0)
+        #self.connection.assert_card_played_hand(0)
+        self.connection.assert_card_discarded_hand(0)
 
     def test_turn_36(self):
         # Deck size 19, Bob, Clues 3, Score 12
