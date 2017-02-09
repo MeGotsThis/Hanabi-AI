@@ -44,26 +44,25 @@ def simulate(config, mapFunc):
     print()
 
     start = time.time()
-    with Pool(processes=cores) as pool:
-        args = variant, players, bot, kwargs
-        allArgs = (args for _ in range(runs))
+    args = variant, players, bot, kwargs
+    allArgs = (args for _ in range(runs))
 
-        maxScore = len(variant.pile_suits) * len(Rank)
-        doneScores = {s: 0 for s in range(maxScore + 1)}
-        lossScores = {s: 0 for s in range(maxScore + 1)}
+    maxScore = len(variant.pile_suits) * len(Rank)
+    doneScores = {s: 0 for s in range(maxScore + 1)}
+    lossScores = {s: 0 for s in range(maxScore + 1)}
 
-        check = min(100, runs // 100)
-        completed = 0
-        for game in pool.imap_unordered(run, allArgs):
-            completed += 1
-            scores = doneScores if not game.loss else lossScores
-            scores[game.score] += 1
-            if completed % check == 0:
-                print('{}/{} completed, Current Time: {}'.format(
-                    completed, runs, datetime.now()))
-        if completed % check != 0:
+    check = min(100, runs // 100)
+    completed = 0
+    for game in mapFunc:
+        completed += 1
+        scores = doneScores if not game.loss else lossScores
+        scores[game.score] += 1
+        if completed % check == 0:
             print('{}/{} completed, Current Time: {}'.format(
                 completed, runs, datetime.now()))
+    if completed % check != 0:
+        print('{}/{} completed, Current Time: {}'.format(
+            completed, runs, datetime.now()))
     duration = time.time() - start
 
     print()
