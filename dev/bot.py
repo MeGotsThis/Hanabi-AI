@@ -959,7 +959,7 @@ class Bot(bot.Bot):
             needToPlay = self.maxPlayValue[c] - len(self.game.playedCards[c])
             if (not needFix and isNewestGood and values[0][1] is not None
                 and maybeDuplicate == 0
-                and (goodTag > 0 or badClarify == needToPlay)):
+                and goodTag > 0):
                 baseValue, baseSave = 22, 11
                 colorFitness = (numPlay * baseValue
                                 + numWorthless
