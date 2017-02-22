@@ -47,6 +47,7 @@ class ServerGame:
         self.clues = 8
         self.strikes = 0
         self.loss = False
+        self.lastAction = None
 
         self.connections = [ServerConnection(p, self)
                             for p in range(players)]
@@ -183,6 +184,8 @@ class ServerGame:
     def clue_player(self, player, target, type, value):
         if self.isGameComplete():
             raise GameException('Game is complete')
+        if self.lastAction == player:
+            raise GameException('Player already made a move', player)
         if self.currentPlayer != player:
             raise GameException('Wrong Player Turn', player)
         if player == target:
@@ -209,6 +212,7 @@ class ServerGame:
                        'clue': {'type': type, 'value': value},
                        'list': cards})
             self.clues -= 1
+            self.lastAction = player
             self.print("{} tells {} about {} {}'s".format(
                 names[player], names[target], numberWords[len(cards)],
                 rank.value))
@@ -232,6 +236,7 @@ class ServerGame:
                        'clue': {'type': type, 'value': value},
                        'list': cards})
             self.clues -= 1
+            self.lastAction = player
             self.print("{} tells {} about {} {}'s".format(
                 names[player], names[target], numberWords[len(cards)],
                 suit.full_name(self.variant)))
@@ -241,6 +246,8 @@ class ServerGame:
     def play_card(self, player, deckIdx):
         if self.isGameComplete():
             raise GameException('Game is complete')
+        if self.lastAction == player:
+            raise GameException('Player already made a move', player)
         if self.currentPlayer != player:
             raise GameException('Wrong Player Turn', player)
         card = self.deck[deckIdx]
@@ -277,10 +284,13 @@ class ServerGame:
                 names[player], card.suit.full_name(self.variant),
                 card.rank.value))
         self.draw_card(player)
+        self.lastAction = player
 
     def discard_card(self, player, deckIdx):
         if self.isGameComplete():
             raise GameException('Game is complete')
+        if self.lastAction == player:
+            raise GameException('Player already made a move', player)
         if self.currentPlayer != player:
             raise GameException('Wrong Player Turn', player)
         if self.clues == 8:
@@ -301,6 +311,7 @@ class ServerGame:
         self.print("{} discards {} {}".format(
             names[player], card.suit.full_name(self.variant), card.rank.value))
         self.draw_card(player)
+        self.lastAction = player
 
 
 class ServerCard:
