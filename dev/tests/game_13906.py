@@ -32,5 +32,5 @@ class Game13906(GameSimulatorTesting):
         # Deck size 25, Donald, Clues 0, Score 5
         self.load_game(r'games\13906.json', position=3, turn=19, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_discarded_hand(2)
+        self.connection.assert_card_played_hand(2)
 
