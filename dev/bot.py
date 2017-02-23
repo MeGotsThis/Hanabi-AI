@@ -16,6 +16,16 @@ class GameStage(Enum):
     End = auto()
 
 
+class HandState(Enum):
+    Unclued = auto()
+    Critical = auto()
+    Critical2 = auto()
+    SoonPlay = auto()
+    Playable = auto()
+    Worthless = auto()
+    Saved = auto()
+
+
 class Bot(bot.Bot):
     '''
     Multi-tag Bot
@@ -210,44 +220,44 @@ class Bot(bot.Bot):
         self.playedCount[color][value] += 1
         assert 1 <= self.playedCount[color][value] <= value.num_copies
 
-    def nextPlayDiscardIndex(self, player):
-        play_index = None
-        playable_value = None
-        discard_index = None
-        worthless = False
+    def handState(self, player, showCritical=True):
+        handState = [HandState.Unclued] * len(self.game.players[player].hand)
         for c, h in enumerate(self.game.players[player].hand):
             card = self.game.deck[h]
-            if card.playable is True:
-                if card.playable:
-                    # Play newest
-                    playable = 10
-                    #if card.value is not None:
-                    #    playable += (6 - card.value) * 4
-                    #elif card.playValue is not None:
-                    #    playable += (6 - card.playValue) * 4
-                    #if card.color is not None and card.value is not None:
-                    #    playable += 2
-                    if playable_value is None or playable >= playable_value:
-                        play_index = c
-                        playable_value = playable
-                continue
             if card.worthless is True:
-                # Discard worthless newest
-                discard_index = c
-                worthless = True
+                handState[c] = HandState.Worthless
                 continue
             if card.playWorthless is True:
-                # Discard deduced worthless newest
-                discard_index = c
-                worthless = True
+                handState[c] = HandState.Worthless
+                continue
+            if card.playable is True:
+                handState[c] = HandState.Playable
                 continue
             if card.valuable is True:
-                # Hold card
+                handState[c] = HandState.Saved
                 continue
+            if card.clued:
+                handState[c] = HandState.SoonPlay
+                continue
+            if showCritical and player != self.position:
+                if self.isValuable(card.suit, card.rank):
+                    handState[c] = HandState.Critical
+                elif card.rank == Value.V2 and self.is2Valuable(card.suit):
+                    handState[c] = HandState.Critical2
+        return handState
 
-            if discard_index is None and not card.clued and not worthless:
-                discard_index = c
-        return play_index, discard_index, worthless
+    def discardSlot(self, handState):
+        discard = None
+        worthless = None
+        for c, h in enumerate(handState):
+            if h in [HandState.Playable, HandState.SoonPlay, HandState.Saved]:
+                continue
+            if h == HandState.Worthless:
+                worthless = c
+            else:
+                if discard is None:
+                    discard = c
+        return worthless if worthless is not None else discard
 
     def isCluedElsewhere(self, player, hand):
         returnVal = False
@@ -308,32 +318,6 @@ class Bot(bot.Bot):
                          maybe=False):
         return self.cluedCard(color, value, player, strict, maybe) is not None
 
-    def possibleDoubleDiscard(self):
-        if self.game.numPlayers < 3:
-            # Only valid with 3 or more players
-            return False
-
-        lh1 = (self.position + 1) % self.game.numPlayers
-        lh2 = (self.position + 2) % self.game.numPlayers
-
-        play1, discard1, worthless1 = self.nextPlayDiscardIndex(lh1)
-        play2, discard2, worthless2 = self.nextPlayDiscardIndex(lh2)
-
-        if worthless1 or worthless2:
-            return False
-
-        if play1 is not None or play2 is not None:
-            return False
-
-        if discard1 is None or discard2 is None:
-            # Either player has no valid discards aka a full hand
-            return None
-
-        card1 = self.game.deck[self.game.players[lh1].hand[discard1]]
-        card2 = self.game.deck[self.game.players[lh1].hand[discard2]]
-
-        return card1.suit == card2.suit and card1.rank == card2.rank
-
     def maybeFixBeforeMisplay(self):
         if self.game.clueCount == 0:
             assert False
@@ -378,9 +362,9 @@ class Bot(bot.Bot):
         if self.game.clueCount == 0:
             assert False
 
-        selfPlay, _, _ = self.nextPlayDiscardIndex(self.position)
+        selfHandState = self.handState(self.position)
 
-        if not urgent and selfPlay is not None:
+        if not urgent and HandState.Playable in selfHandState:
             return False
 
         distance = range(1, self.game.numPlayers)
@@ -388,17 +372,31 @@ class Bot(bot.Bot):
             distance = range(1, 2)
         for d in distance:
             player = (self.position + d) % self.game.numPlayers
-            play, discard, worthless = self.nextPlayDiscardIndex(player)
-            if worthless:
+            handState = self.handState(player)
+            if HandState.Worthless in handState:
                 continue
-            if discard is None:
+            if HandState.Critical in handState:
+                critical = handState.index(HandState.Critical)
+                if HandState.Unclued in handState:
+                    unclued = handState.index(HandState.Unclued)
+                    if unclued < critical:
+                        continue
+            elif HandState.Critical2 in handState:
+                critical = handState.index(HandState.Critical2)
+                if HandState.Unclued in handState:
+                    unclued = handState.index(HandState.Unclued)
+                    if unclued < critical:
+                        continue
+            elif HandState.Unclued in handState:
+                critical = handState.index(HandState.Unclued)
+            else:
                 continue
             hand = self.game.players[player].hand
-            card = self.game.deck[hand[discard]]
+            card = self.game.deck[hand[critical]]
             valuable = self.isValuable(card.suit, card.rank)
             if not valuable and card.rank == 2 and self.is2Valuable(card.suit):
                 if (self.game.numPlayers == 2
-                        or self.doesCardMatchHand(hand[discard])):
+                        or self.doesCardMatchHand(hand[critical])):
                     valuable = None
             if valuable is False:
                 continue
@@ -497,8 +495,8 @@ class Bot(bot.Bot):
                         colorDuplicate += 1
                 if self.doesCardMatchHand(tcard.deckPosition):
                     colorMDuplicate += 1
-            if colorSave5 and discard + 1 < len(hand):
-                nextCard = self.game.deck[hand[discard + 1]]
+            if colorSave5 and critical + 1 < len(hand):
+                nextCard = self.game.deck[hand[critical + 1]]
                 isSave5NextToDiscard = (nextCard.suit == card.suit
                                         and nextCard.rank == Value.V5)
             if colorDuplicate == 0 and colorUseless == 0 and valuable is True:
@@ -582,7 +580,7 @@ class Bot(bot.Bot):
                         hint.color = None
                         hint.fitness = valueBadFitness
 
-            if urgent and play is None:
+            if urgent and HandState.Playable not in handState:
                 playHint = self.bestHintForPlayer(player)
                 if playHint is not None and self.game.clueCount >= 2:
                     hint = playHint
@@ -601,14 +599,19 @@ class Bot(bot.Bot):
         if self.game.numPlayers < 3:
             return False
 
-        play, discard, worthless = self.nextPlayDiscardIndex(self.position)
+        handState = self.handState(self.position)
+        discard = self.discardSlot(handState)
         if discard is None:
             return None
 
         # First check adjacent player
         nextPlayer = (self.position + 1) % self.game.numPlayers
-        playN, discardN, worthlessN = self.nextPlayDiscardIndex(nextPlayer)
-        if playN is None and not worthlessN and discardN is not None:
+        handStateN = self.handState(nextPlayer)
+        discardN = self.discardSlot(handStateN)
+        maybeDiscard = (HandState.Playable not in handStateN
+                        and HandState.Playable not in handStateN
+                        and discardN is not None)
+        if maybeDiscard:
             hand = self.game.players[nextPlayer].hand
             cardN = self.game.deck[hand[discardN]]
             if self.isValuable(cardN.suit, cardN.rank):
@@ -616,17 +619,18 @@ class Bot(bot.Bot):
                 return True
 
         distance = range(2, self.game.numPlayers)
-        if play:
+        if HandState.Playable in handState:
             distance = range(2, 3)
 
         for d in distance:
             target = (self.position + d) % self.game.numPlayers
 
-            playT, discardT, worthlessT = self.nextPlayDiscardIndex(target)
+            handStateT = self.handState(target)
+            discardT = self.discardSlot(handStateT)
 
-            if playT is not None:
+            if HandState.Playable in handStateN:
                 continue
-            if worthlessT:
+            if HandState.Worthless not in handStateN:
                 continue
             if discardT is None:
                 continue
@@ -638,9 +642,10 @@ class Bot(bot.Bot):
 
             for c in range(1, d):
                 between = (self.position + c) % self.game.numPlayers
-                (playB, discardB, worthlessB
-                 ) = self.nextPlayDiscardIndex(between)
-                needToDiscard = not (playB is None or worthlessB)
+                handStateB = self.handState(between)
+                discardB = self.discardSlot(handStateB)
+                needToDiscard = not (HandState.Playable in handStateB
+                                     or HandState.Worthless in handStateB)
                 if needToDiscard and discardB is not None:
                     betweenHand = self.game.players[between].hand
                     cardB = self.game.deck[betweenHand[discardB]]
@@ -938,7 +943,8 @@ class Bot(bot.Bot):
             awayFromPlayable[i] = nextValue - card.rank
             awayFromTaggable[i] = needToTag[card.suit] - card.rank
 
-        play, discard, worthless = self.nextPlayDiscardIndex(player)
+        handState = self.handState(player)
+        discard = self.discardSlot(handState)
 
         numClued = 0
         for h in hand:
@@ -958,7 +964,7 @@ class Bot(bot.Bot):
                 continue
 
             looksLikeSave = False
-            if not worthless and discard in tagged:
+            if HandState.Worthless not in handState and discard in tagged:
                 saveValues = self.matchCriticalCardColor(c)
                 looksLikeSave = bool(saveValues)
 
@@ -996,7 +1002,7 @@ class Bot(bot.Bot):
                 continue
 
             looksLikeSave = False
-            if not worthless and discard in tagged:
+            if HandState.Worthless not in handState and discard in tagged:
                 saveColors = self.matchCriticalCardValue(v)
                 looksLikeSave = bool(saveColors) or v == Value.V5
 
@@ -1035,8 +1041,11 @@ class Bot(bot.Bot):
         return best_so_far
 
     def bestCardToPlay(self):
-        play, discard, worthless = self.nextPlayDiscardIndex(self.position)
-        return play
+        handState = self.handState(self.position)
+        for i, hs in reversed(list(enumerate(handState))):
+            if hs == HandState.Playable:
+                return i
+        return None
 
     def maybePlayCard(self):
         best_index = self.bestCardToPlay()
@@ -1054,8 +1063,8 @@ class Bot(bot.Bot):
             player = (self.position + i) % self.game.numPlayers
             candidate = self.bestHintForPlayer(player)
             if candidate is not None and candidate.fitness >= 0:
-                play, discard, worthless = self.nextPlayDiscardIndex(player)
-                if play is not None:
+                handState = self.handState(player)
+                if HandState.Playable in handState:
                     candidate.fitness += (self.game.numPlayers - i) * 3
             if candidate is not None and candidate.fitness > bestHint.fitness:
                 bestHint = candidate
@@ -1141,7 +1150,8 @@ class Bot(bot.Bot):
             assert None
 
     def maybeDiscardOldCard(self):
-        play, discard, worthless = self.nextPlayDiscardIndex(self.position)
+        handState = self.handState(self.position)
+        discard = self.discardSlot(handState)
         if discard is not None:
             self.discard_card(discard)
             return True
@@ -1453,7 +1463,8 @@ class Bot(bot.Bot):
     def pleaseObserveColorHint(self, from_, to, color, card_indices):
         hand = self.game.players[to].hand
         score = len(self.game.playedCards[color])
-        playable, discard, worthless = self.nextPlayDiscardIndex(to)
+        handState = self.handState(to)
+        discard = self.discardSlot(handState)
 
         possibleValues = []
         for v in self.values[score:self.maxPlayValue[color]]:
@@ -1471,8 +1482,9 @@ class Bot(bot.Bot):
 
         numToComplete = self.maxPlayValue[color] - score
         criticalValues = self.matchCriticalCardColor(color)
-        criticalClue = not worthless and discard in card_indices
-        if not worthless and discard in card_indices:
+        criticalClue = (HandState.Worthless not in handState
+                            and discard in card_indices)
+        if HandState.Worthless not in handState and discard in card_indices:
             criticalClue = bool(criticalValues
                                 and numToComplete > len(card_indices))
         criticalState = criticalClue
@@ -1527,7 +1539,7 @@ class Bot(bot.Bot):
 
         clueLog = ClueState(self.game.turnCount, criticalClue,
                             hand[:], card_indices[:], wasClued[:],
-                            discard, worthless,
+                            discard, HandState.Worthless in handState,
                             color=color, discard_values=criticalValues[:])
         self.clueLog[to].append(clueLog)
 
@@ -1561,10 +1573,12 @@ class Bot(bot.Bot):
                     possibleColors.append(c)
             else:
                 possibleColors.append(c)
-        playable, discard, worthless = self.nextPlayDiscardIndex(to)
+        handState = self.handState(to)
+        discard = self.discardSlot(handState)
 
         criticalColors = self.matchCriticalCardValue(value)
-        criticalClue = ((not worthless and discard in card_indices)
+        criticalClue = ((HandState.Worthless not in handState
+                         and discard in card_indices)
                         or value == Value.V5)
         if criticalClue and discard is not None:
             discardCard = self.game.deck[hand[discard]]
@@ -1654,7 +1668,7 @@ class Bot(bot.Bot):
 
         clueLog = ClueState(self.game.turnCount, criticalClue,
                             hand[:], card_indices[:], wasClued[:],
-                            discard, worthless,
+                            discard, HandState.Worthless in handState,
                             value=value,
                             play_colors=possibleColors[:],
                             later_colors=laterColors[:],
