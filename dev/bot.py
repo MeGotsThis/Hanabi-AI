@@ -1,5 +1,6 @@
 import time
 
+from enum import Enum, auto
 from itertools import chain
 
 from bot import bot
@@ -7,6 +8,12 @@ from enums import Color, Value, Variant
 from .card_knowledge import CardKnowledge, CardState
 from .clue_info import ClueState
 from .hint import Hint
+
+
+class GameStage(Enum):
+    Early = auto()
+    Mid = auto()
+    End = auto()
 
 
 class Bot(bot.Bot):
@@ -97,6 +104,13 @@ class Bot(bot.Bot):
         if self.waitTime:
             time.sleep(self.waitTime)
         self.pleaseMakeMove(can_clue, can_discard)
+
+    def game_stage(self):
+        if len(self.game.discards) == 0:
+            return GameStage.Early
+        if self.game.deckCount <= len(self.game.players):
+            return GameStage.End
+        return GameStage.Mid
 
     def isNowPlayable(self, color, value):
         assert color is not None or value is not None
