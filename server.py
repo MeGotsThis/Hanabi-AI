@@ -19,7 +19,7 @@ class CardStatus(Enum):
 
 class ServerGame:
     def __init__(self, variant, players, botCls, *, print_messages=False,
-                 null_clues=False, seed=None, **kwargs):
+                 print_verbose=False, null_clues=False, seed=None, **kwargs):
         if variant not in Variant:
             raise ValueError('variant')
         if players < 2 or players > 5:
@@ -29,10 +29,12 @@ class ServerGame:
         self.rng = random.Random(self.seed)
         self.variant = variant
         self.players = players
+        self.printVerbose = convert_print(print_verbose)
         self.printMessages = convert_print(print_messages)
         self.allowNullClues = bool(null_clues)
         self.gameLog = []
         self.messages = []
+        self.verbose = []
 
         self.initialize_deck()
         self.hands = [[] for _ in range(players)]
@@ -82,10 +84,18 @@ class ServerGame:
             maxScore += possible
         self.maxScore = maxScore
 
-    def print(self, message, final=False):
-        self.messages.append(message)
-        if self.printMessages or (final and self.printMessages is None):
-            print(message)
+    def print(self, message=None, verbose=None, final=False):
+        verbose = verbose if verbose is not None else message
+        if verbose is not None:
+            self.verbose.append(verbose)
+            if self.printVerbose:
+                print(verbose)
+        if message is not None:
+            self.messages.append(message)
+            if not self.printVerbose and self.printMessages:
+                print(message)
+            if final and self.printMessages is None:
+                print(message)
 
     def run_game(self):
         self.log('game_start', {'replay': False})
@@ -119,12 +129,57 @@ class ServerGame:
 
         self.loss = self.strikes == 3
         if not self.loss:
-            self.print("Players score {} points".format(self.score), True)
+            self.print("Players score {} points".format(self.score),
+                       final=True)
         else:
-            self.print("Players lost", True)
+            self.print("Players lost", final=True)
+        self.print(verbose='')
+        self.print(verbose='Number of Players: {}'.format(len(self.players)))
+        self.print(verbose='Variant: {}'.format(self.variant.full_name))
+        self.print(verbose='Deck Size: {}'.format(len(self.deck)))
+        self.recordGameState()
+
+    def recordGameState(self):
+        deckSize = len(self.deck) - self.nextDraw
+        lastPlayer = (self.currentPlayer - 1) % len(self.players)
+        self.print(verbose='Deck Count: {}'.format(deckSize))
+        self.print(verbose='Clue Count: {}'.format(self.clues))
+        self.print(verbose='Score: {}'.format(self.score))
+        self.print(verbose='Strikes: {}'.format(self.strikes))
+        self.print(verbose='Max Possible Score: {}'.format(self.maxScore))
+        self.print(verbose='Turn Count: {}'.format(self.turnCount))
+        self.print(verbose='End Turn: {}'.format(self.endTurn))
+        self.print(verbose='Next Draw Index: {}'.format(self.nextDraw))
+        self.print(verbose='Last Player: {}'.format(names[lastPlayer]))
+        self.print(verbose='')
+        self.print(verbose='Player Hands (Newest To Oldest)')
+        for p, hand in enumerate(self.hands):
+            cards = []
+            for deckIdx in reversed(hand):
+                card = self.deck[deckIdx]
+                cards.append('{} {}'.format(card.suit.full_name(self.variant),
+                                            card.rank.value))
+            self.print(verbose='{}: {}'.format(names[p], ', '.join(cards)))
+        self.print(verbose='')
+        self.print(verbose='Played Cards')
+        for s in self.variant.pile_suits:
+            self.print(verbose='{}: {}'.format(s.full_name(self.variant),
+                                               len(self.plays[s])))
+        self.print(verbose='')
+        self.print(verbose='Discarded Cards')
+        for s in self.variant.pile_suits:
+            discards = []
+            for deckIdx in self.discards[s]:
+                card = self.deck[deckIdx]
+                discards.append(card.rank.value)
+            discards.sort()
+            self.print(verbose='{}: {}'.format(
+                s.full_name(self.variant),
+                ', '.join(str(d) for d in discards)))
+        self.print(verbose='')
 
     def log(self, type, resp):
-        pass
+        self.gameLog.append((type, resp))
 
     def send(self, type, resp, *, player=None):
         if player is not None:
@@ -180,6 +235,8 @@ class ServerGame:
             self.endTurn = self.turnCount + len(self.players)
         self.send('notify', {'type': 'draw_size',
                              'size': len(self.deck) - self.nextDraw})
+        self.print(verbose="{} draws {} {}".format(
+            names[player], card.suit.full_name(self.variant), card.rank.value))
 
     def clue_player(self, player, target, type, value):
         if self.isGameComplete():
@@ -198,10 +255,12 @@ class ServerGame:
             rank = Rank(value)
             if not rank.valid():
                 raise GameException('Invalid rank value', value)
+            positions = []
             cards = []
-            for h in self.hands[target]:
+            for i, h in enumerate(self.hands[target]):
                 card = self.deck[h]
                 if card.rank == rank:
+                    positions.insert(0, len(self.hands[target]) - i)
                     cards.append(h)
             if not cards and not self.allowNullClues:
                 raise GameException('No Cards Clued')
@@ -213,17 +272,23 @@ class ServerGame:
                        'list': cards})
             self.clues -= 1
             self.lastAction = player
-            self.print("{} tells {} about {} {}'s".format(
-                names[player], names[target], numberWords[len(cards)],
-                rank.value))
+            self.print(
+                "{} tells {} about {} {}'s".format(
+                    names[player], names[target], numberWords[len(cards)],
+                    rank.value),
+                "{} tells {} about {} {}'s in slots {}".format(
+                    names[player], names[target], numberWords[len(cards)],
+                    rank.value, ', '.join(str(p) for p in positions)))
         elif type == Clue.Suit.value:
             suit = Suit(value)
             if not suit.valid(self.variant):
                 raise GameException('Invalid suit value', value)
+            positions = []
             cards = []
-            for h in self.hands[target]:
+            for i, h in enumerate(self.hands[target]):
                 card = self.deck[h]
                 if card.suit == suit:
+                    positions.insert(0, len(self.hands[target]) - i)
                     cards.append(h)
                 if self.variant == Variant.Rainbow and card.suit == Suit.Extra:
                     cards.append(h)
@@ -237,9 +302,14 @@ class ServerGame:
                        'list': cards})
             self.clues -= 1
             self.lastAction = player
-            self.print("{} tells {} about {} {}'s".format(
-                names[player], names[target], numberWords[len(cards)],
-                suit.full_name(self.variant)))
+            self.print(
+                "{} tells {} about {} {}'s".format(
+                    names[player], names[target], numberWords[len(cards)],
+                    suit.full_name(self.variant)),
+                "{} tells {} about {} {}'s in slots {}".format(
+                    names[player], names[target], numberWords[len(cards)],
+                    suit.full_name(self.variant),
+                    ', '.join(str(p) for p in positions)))
         else:
             raise GameException('Invalid clue type', type)
 
@@ -264,10 +334,16 @@ class ServerGame:
                                  'index': card.index, 'order': card.position}})
             self.score += 1
             card.status = CardStatus.Play
+            position = (len(self.hands[player])
+                        - self.hands[player].index(deckIdx))
             self.hands[player].remove(deckIdx)
-            self.print("{} plays {} {}".format(
-                names[player], card.suit.full_name(self.variant),
-                card.rank.value))
+            self.print(
+                "{} plays {} {}".format(
+                    names[player], card.suit.full_name(self.variant),
+                    card.rank.value),
+                "{} plays {} {} from slot {}".format(
+                    names[player], card.suit.full_name(self.variant),
+                    card.rank.value, position))
         else:
             self.discards[card.suit].append(card.position)
             self.strikes += 1
@@ -279,10 +355,16 @@ class ServerGame:
                       {'type': 'strike',
                        'num': self.strikes})
             card.status = CardStatus.Discard
+            position = (len(self.hands[player])
+                        - self.hands[player].index(deckIdx))
             self.hands[player].remove(deckIdx)
-            self.print("{} fails to play {} {}".format(
-                names[player], card.suit.full_name(self.variant),
-                card.rank.value))
+            self.print(
+                "{} fails to play {} {}".format(
+                    names[player], card.suit.full_name(self.variant),
+                    card.rank.value),
+                "{} fails to play {} {} from slot {}".format(
+                    names[player], card.suit.full_name(self.variant),
+                    card.rank.value, position))
         self.draw_card(player)
         self.lastAction = player
 
@@ -306,10 +388,16 @@ class ServerGame:
                    'which': {'suit': card.suit, 'rank': card.rank,
                              'index': card.index, 'order': card.position}})
         card.status = CardStatus.Discard
+        position = len(self.hands[player]) - self.hands[player].index(deckIdx)
         self.hands[player].remove(deckIdx)
         self.clues += 1
-        self.print("{} discards {} {}".format(
-            names[player], card.suit.full_name(self.variant), card.rank.value))
+        self.print(
+            "{} discards {} {}".format(
+                names[player], card.suit.full_name(self.variant),
+                card.rank.value),
+            "{} discards {} {} from slot {}".format(
+                names[player], card.suit.full_name(self.variant),
+                card.rank.value, position))
         self.draw_card(player)
         self.lastAction = player
 
