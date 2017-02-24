@@ -1,5 +1,3 @@
-import time
-
 from enums import Clue, Suit, Rank
 
 class Game:
@@ -92,7 +90,6 @@ class Game:
         print(message)
 
     def decide_action(self, can_clue, can_discard):
-        time.sleep(0.05)
         self.bot.decide_move(can_clue, can_discard)
 
     def deck_draw(self, player, deckidx, color, value):
