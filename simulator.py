@@ -1,4 +1,5 @@
 import configparser
+import copy
 import importlib
 import time
 
@@ -13,7 +14,13 @@ from enums import Rank, Variant
 
 
 def run(args):
-    variant, players, bot, kwargs = args
+    variant, players, bot, kwargs, i = args
+    if 'seed' in kwargs and kwargs['seed'] is not None:
+        kwargs = copy.copy(kwargs)
+        try:
+            kwargs['seed'] = int(kwargs['seed']) + i
+        except ValueError:
+            kwargs['seed'] = kwargs['seed'] + str(i)
     game = ServerGame(variant, players, bot, **kwargs)
     game.run_game()
     return game
@@ -50,8 +57,8 @@ def simulate(config, mapFunc):
     print()
 
     start = time.time()
-    args = variant, players, bot, kwargs
-    allArgs = (args for _ in range(runs))
+    args = variant, players, bot, dict(kwargs)
+    allArgs = (args + (i,) for i in range(runs))
 
     maxScore = len(variant.pile_suits) * len(Rank)
     doneScores = {s: 0 for s in range(maxScore + 1)}
