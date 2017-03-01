@@ -70,6 +70,10 @@ def simulate(config, mapFunc):
         completed += 1
         scores = doneScores if not game.loss else lossScores
         scores[game.score] += 1
+        if game.loss:
+            if game.score <= 5:
+                for m in game.verbose:
+                    print(m)
         if completed % check == 0:
             print('{}/{} completed, Current Time: {}'.format(
                 completed, runs, datetime.now()))

@@ -1,26 +1,38 @@
+from typing import List, Optional
+
 from abc import abstractmethod
 
-from enums import Action, Clue
+import game
+
+from enums import Action, Clue, Color, Value
 from .card import Card
 from .player import Player
 
 
 class Bot(Player):
-    BOT_NAME = 'Base Bot'
+    BOT_NAME: str = 'Base Bot'
 
-    def __init__(self, game, position, name, *, debug=False, **kwargs):
-        super().__init__(game, position, name)
-        self.debug = bool(debug)
+    def __init__(self,
+                 gameObj: 'game.Game',
+                 position: int,
+                 name: str, *,
+                 debug: bool=False, **kwargs) -> None:
+        super().__init__(gameObj, position, name)
+        self.debug: bool = bool(debug)
 
     '''
     Some helper methods to create some objects
     '''
-    def create_player(self, position, name):
+    def create_player(self, position: int, name: str):
         if position == self.position:
             return self
         return Player(self.game, position, name)
 
-    def create_player_card(self, player, deckPosition, color, value):
+    def create_player_card(self,
+                           player: int,
+                           deckPosition: int,
+                           color: Optional[Color],
+                           value: Optional[Value]):
         return Card(self.game, player, deckPosition, color, value)
 
     def create_own_card(self, deckPosition):
@@ -31,43 +43,63 @@ class Bot(Player):
     next_turn for the bot
     '''
     @abstractmethod
-    def decide_move(self, can_clue, can_discard): ...
+    def decide_move(self, can_clue: bool, can_discard: bool) -> None: ...
 
     '''
     This will be called for all players
     '''
-    def next_turn(self, player): ...
-    def striked(self, player): ...
+    def next_turn(self, player: int): ...
+    def striked(self, player: int): ...
 
     '''
     These will be called for all players except the bot
     '''
-    def someone_drew(self, player, deckIdx): ...
-    def someone_played(self, player, deckIdx, position): ...
-    def someone_discard(self, player, deckIdx, position): ...
-    def someone_got_color(self, from_, to, color, positions): ...
-    def someone_got_value(self, from_, to, value, positions): ...
+    def someone_drew(self, player: int, deckIdx: int) -> None: ...
+    def someone_played(self,
+                       player: int,
+                       deckIdx: int,
+                       position: int) -> None: ...
+    def someone_discard(self,
+                        player: int,
+                        deckIdx: int,
+                        position: int) -> None: ...
+    def someone_got_color(self,
+                          from_: int,
+                          to: int,
+                          color: Color,
+                          positions: List[int]): ...
+    def someone_got_value(self,
+                          from_: int,
+                          to: int,
+                          value: Value,
+                          positions: List[int]): ...
 
     '''
     These will be called for only the bot
     '''
-    def got_color_clue(self, player, color, positions): ...
-    def got_value_clue(self, player, value, positions): ...
+    def got_color_clue(self,
+                       player: int,
+                       color: Color,
+                       positions: List[int]) -> None: ...
+    def got_value_clue(self,
+                       player: int,
+                       value: Value,
+                       positions: List[int]) -> None: ...
 
     '''
     These will be called for only the bot.
     Both card_played and card_discarded are called before played_card and
     discarded_card
     '''
-    def card_played(self, deckIdx, position): ...
-    def card_discarded(self, deckIdx, position): ...
-    def card_revealed(self, deckIdx): ...
+    def card_played(self, deckIdx: int, position: int) -> None: ...
+    def card_discarded(self, deckIdx: int, position: int) -> None: ...
+    def card_revealed(self, deckIdx: int) -> None: ...
 
     '''
     These are actions for the bot to take on decide_move
     Should not be overriden
     '''
-    def can_color_clue(self, who, color):
+    def can_color_clue(self, who: int, color: Color) -> bool:
         if who == self.position:
             return False
         for deckIdx in self.game.players[who].hand:
@@ -76,7 +108,7 @@ class Bot(Player):
                 return True
         return False
 
-    def can_value_clue(self, who, value):
+    def can_value_clue(self, who: int, value: Value) -> bool:
         if who == self.position:
             return False
         for deckIdx in self.game.players[who].hand:
@@ -85,7 +117,7 @@ class Bot(Player):
                 return True
         return False
 
-    def give_color_clue(self, who, color):
+    def give_color_clue(self, who: int, color: Color) -> None:
         if self.debug:
             print('Sending Color Clue {color} to {who}'.format(
                 color=color.full_name(self.game.variant),
@@ -95,7 +127,7 @@ class Bot(Player):
                                   'clue': {'type': Clue.Suit.value,
                                            'value': suit.value}})
 
-    def give_value_clue(self, who, value):
+    def give_value_clue(self, who: int, value: Value) -> None:
         if self.debug:
             print('Sending Value Clue {value} to {who}'.format(
                 value=value, who=self.game.players[who].name))
@@ -104,7 +136,7 @@ class Bot(Player):
                                   'clue': {'type': Clue.Rank.value,
                                            'value': rank.value}})
 
-    def play_card(self, position):
+    def play_card(self, position: int) -> None:
         if self.debug:
             print(
                 'Sending Playing Card from slot {position}, deck index '
@@ -113,7 +145,7 @@ class Bot(Player):
         self.game.send('action', {'type': Action.Play.value,
                                   'target': self.hand[position]})
 
-    def discard_card(self, position):
+    def discard_card(self, position: int) -> None:
         if self.debug:
             print(
                 'Sending Discarding Card from slot {position}, deck index '

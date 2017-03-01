@@ -4,25 +4,27 @@ import importlib
 import sys
 
 from collections import ChainMap
+from typing import Any, Dict, List, Optional, Type
 
 import socketIO_client
 import six
 
+from bot.bot import Bot
 from game import Game
 from enums import Variant
 
-_errorObj = object()
+_errorObj: object = object()
 
 six.b = lambda s: s.encode()
 
-waitTime = 0.1
-tables = {}
-currentTableId = None
-currentTable = None
-currentTablePosition = None
-tablePlayers = []
-readyToStart = False
-game = None
+waitTime: float = 0.1
+tables: Dict[int, dict] = {}
+currentTableId: Optional[int] = None
+currentTable: Optional[dict] = None
+currentTablePosition: Optional[int] = None
+tablePlayers: List[str] = []
+readyToStart: bool = False
+game: Optional[Game] = None
 
 
 def on_message(*args):
@@ -30,10 +32,10 @@ def on_message(*args):
     global game, readyToStart
     if not args or isinstance(args[0], bytes):
         return
-    mtype = args[0]['type']
+    mtype: str = args[0]['type']
     if mtype in ['hello', 'advanced']:
         args[0]['resp'] = {}
-    data = args[0]['resp']
+    data: dict = args[0]['resp']
 
     if mtype == 'denied':
         print(data['reason'])
@@ -70,7 +72,7 @@ def on_message(*args):
             kwargs = ChainMap(botconfig[botconfig['BOT']['bot']],
                               botconfig['BOT'])
         game = Game(conn, Variant(data['variant']), data['names'],
-                    data['seat'], bot, **kwargs)
+                    data['seat'], botCls, **kwargs)
         print('Game Loaded')
         conn.emit('message', {'type': 'ready', 'resp': {}})
     elif mtype in ['hello', 'user', 'user_left', 'chat',
@@ -90,7 +92,7 @@ def on_message(*args):
         raise Exception()
 
 
-def int_input(prompt='-->', *, min=None, max=None, error=_errorObj):
+def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj) -> Any:
     while True:
         try:
             i = int(input(prompt))
@@ -104,31 +106,39 @@ def int_input(prompt='-->', *, min=None, max=None, error=_errorObj):
                 return error
 
 
-user = configparser.ConfigParser()
+user: configparser.ConfigParser = configparser.ConfigParser()
 user.read('user.ini')
-botconfig = configparser.ConfigParser()
+botconfig: configparser.ConfigParser = configparser.ConfigParser()
 botconfig.read('bot.ini')
 
 print('Loading Bot AI')
-bot = importlib.import_module(botconfig['BOT']['bot'] + '.bot').Bot
-print('Loaded ' + bot.BOT_NAME)
+botModule = importlib.import_module(botconfig['BOT']['bot'] + '.bot')
+botCls: Type[Bot]
+botCls = botModule.Bot  # type: ignore
+print('Loaded ' + botCls.BOT_NAME)  # type: ignore
 
+conn: socketIO_client.SocketIO
 conn = socketIO_client.SocketIO('keldon.net', 32221)
 conn.on('message', on_message)
 
 print('Connected to keldon.net')
 
 
-username = user['USER']['username']
-password = user['USER']['password']
+username: str = user['USER']['username']
+password: str = user['USER']['password']
+passSha: str
 passSha = hashlib.sha256(b'Hanabi password ' + password.encode()).hexdigest()
 
 try:
-    login = {'username': username, 'password': passSha}
+    login: dict = {'username': username, 'password': passSha}
     conn.emit('message', {'type': 'login', 'resp': login})
     conn.wait(seconds=1)
 
-    i = 0
+    i: int = 0
+    d: dict
+    t: int
+    id: int
+    table: dict
     while True:
         print()
         print('What would you like to do?')
@@ -151,11 +161,11 @@ try:
                 max_players = int_input('Max Players (2 - 5) --> ',
                                         min=2, max=5)
                 print('Variant')
-                for variant in Variant:
+                for variant in Variant:  # type: ignore
                     print('({}) {}'.format(variant.value, variant.full_name))
-                variant = int_input(min=0, max=len(Variant) - 1)
+                variant = int_input(min=0, max=len(Variant) - 1)  # type: ignore
                 print('Allow Spectators? (y or 1 for yes)')
-                allow_spec = input('--> ') in ['1', 'y', 'Y']
+                allow_spec: bool = input('--> ') in ['1', 'y', 'Y']
                 d = {'type': 'create_table',
                      'resp': {'name': name,
                               'max': max_players,

@@ -1,30 +1,42 @@
-from enums import Clue, Suit, Rank
+from typing import Any, Dict, List, Optional, Type
+
+from bot.bot import Bot
+from bot.card import Card
+from bot.player import Player
+from enums import Clue, Color, Suit, Rank, Value, Variant
+
 
 class Game:
-    def __init__(self, connection, variant, names, botPosition, botCls,
-                 **kwargs):
-        self.connection = connection
-        self.variant = variant
-        self.numPlayers = len(names)
-        self.botPosition = botPosition
-        self.bot = botCls(self, botPosition, names[botPosition], **kwargs)
-        self.players = [self.bot.create_player(p, names[p])
-                        for p in range(self.numPlayers)]
-        self.turnCount = 0
-        self.deckCount = 0
-        self.scoreCount = 0
-        self.clueCount = 8
-        self.strikeCount = 0
-        self.currentPlayer = None
-        self.deck = {}
-        self.discards = []
+    def __init__(self,
+                 connection: Any,
+                 variant: Variant,
+                 names: List[str],
+                 botPosition: int,
+                 botCls: Type[Bot],
+                 **kwargs) -> None:
+        self.connection: Any = connection
+        self.variant: Variant  = variant
+        self.numPlayers: int = len(names)
+        self.botPosition: int = botPosition
+        self.bot: Bot = botCls(self, botPosition, names[botPosition], **kwargs)
+        self.players: List[Player] = [self.bot.create_player(p, names[p])
+                                      for p in range(self.numPlayers)]
+        self.turnCount: int = -1
+        self.deckCount: int = -1
+        self.scoreCount: int = 0
+        self.clueCount: int = 8
+        self.strikeCount: int = 0
+        self.currentPlayer: int = -1
+        self.deck: Dict[int, Card] = {}
+        self.discards: List[Card] = []
+        self.playedCards: Dict[Color, List[Card]]
         self.playedCards = {c: [] for c in variant.pile_colors}
-        self.actionLog = []
+        self.actionLog: List[str] = []
 
-    def send(self, type, resp):
+    def send(self, type: str, resp: Dict[str, Any]) -> None:
         self.connection.emit('message', {'type': type, 'resp': resp})
 
-    def received(self, type, resp):
+    def received(self, type: str, resp: Dict[str, Any]) -> None:
         if type == 'message':
             self.message_received(resp['text'])
         elif type == 'init':
@@ -43,7 +55,7 @@ class Game:
             print(type, resp)
             raise Exception()
 
-    def handle_notify(self, data):
+    def handle_notify(self, data: Dict[str, Any]) -> None:
         type = data['type']
         if type == 'draw':
             if 'suit' not in data:
@@ -55,11 +67,9 @@ class Game:
         elif type == 'draw_size':
             self.set_deck_size(data['size'])
         elif type == 'played':
-            # data['index'] == ???
             self.card_played(data['which']['order'], data['which']['suit'],
                              data['which']['rank'])
         elif type == 'discard':
-            # data['index'] == ???
             self.card_discarded(data['which']['order'], data['which']['suit'],
                                 data['which']['rank'])
         elif type == 'reveal':
@@ -85,14 +95,18 @@ class Game:
         else:
             raise Exception()
 
-    def message_received(self, message):
+    def message_received(self, message: str) -> None:
         self.actionLog.append(message)
         print(message)
 
-    def decide_action(self, can_clue, can_discard):
+    def decide_action(self, can_clue: bool, can_discard: bool) -> None:
         self.bot.decide_move(can_clue, can_discard)
 
-    def deck_draw(self, player, deckidx, color, value):
+    def deck_draw(self,
+                  player: int,
+                  deckidx: int,
+                  color: Optional[Color],
+                  value: Optional[Value]) -> None:
         if player == self.botPosition:
             card = self.bot.create_own_card(deckidx)
             self.deck[deckidx] = card
@@ -105,48 +119,54 @@ class Game:
             self.players[player].drew_card(deckidx)
             self.bot.someone_drew(player, deckidx)
 
-    def set_deck_size(self, size):
+    def set_deck_size(self, size: int) -> None:
         self.deckCount = size
 
-    def _card_shown(self, deckidx, suit, rank):
-        card = self.deck[deckidx]
-        color = Suit(suit).color(self.variant)
-        value = Rank(rank).value_()
+    def _card_shown(self, deckidx: int, suit: int, rank: int) -> None:
+        card: Card = self.deck[deckidx]
+        color: Color = Suit(suit).color(self.variant)
+        value: Value = Rank(rank).value_()
         card.suit = color
         card.rank = value
 
-    def card_played(self, deckidx, suit, rank):
+    def card_played(self, deckidx: int, suit: int, rank: int) -> None:
         self._card_shown(deckidx, suit, rank)
         color = Suit(suit).color(self.variant)
         self.playedCards[color].append(self.deck[deckidx])
 
-        player = self.players[self.currentPlayer]
-        pos = player.hand.index(deckidx)
+        player: Player = self.players[self.currentPlayer]
+        pos: int = player.hand.index(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_played(deckidx, pos)
         else:
             self.bot.someone_played(self.currentPlayer, deckidx, pos)
         player.played_card(deckidx)
 
-    def card_discarded(self, deckidx, suit, variant):
-        self._card_shown(deckidx, suit, variant)
+    def card_discarded(self, deckidx: int, suit: int, rank: int) -> None:
+        self._card_shown(deckidx, suit, rank)
         self.discards.append(deckidx)
 
-        player = self.players[self.currentPlayer]
-        pos = player.hand.index(deckidx)
+        player: Player = self.players[self.currentPlayer]
+        pos: int = player.hand.index(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_discarded(deckidx, pos)
         else:
             self.bot.someone_discard(self.currentPlayer, deckidx, pos)
         player.discarded_card(deckidx)
 
-    def card_revealed(self, deckidx, server_color, number):
-        self._card_shown(deckidx, server_color, number)
+    def card_revealed(self, deckidx: int, suit: int, rank: int) -> None:
+        self._card_shown(deckidx, suit, rank)
         self.bot.card_revealed(deckidx)
 
-    def color_clue_sent(self, from_, to, suit, deckidxs):
-        color = Suit(suit).color(self.variant)
-        positions = []
+    def color_clue_sent(self,
+                        from_: int,
+                        to: int,
+                        suit: int,
+                        deckidxs: List[int]) -> None:
+        color: Color = Suit(suit).color(self.variant)
+        positions: List[int] = []
+        i: int
+        h: int
         for i, h in enumerate(self.players[to].hand):
             if h in deckidxs:
                 self.deck[h].got_positive_color(color)
@@ -158,9 +178,15 @@ class Game:
         else:
             self.bot.someone_got_color(from_, to, color, positions)
 
-    def value_clue_sent(self, from_, to, rank, deckidxs):
-        positions = []
-        value = Rank(rank).value_()
+    def value_clue_sent(self,
+                        from_: int,
+                        to: int,
+                        rank: int,
+                        deckidxs: List[int]) -> None:
+        value: Value = Rank(rank).value_()
+        positions: List[int] = []
+        i: int
+        h: int
         for i, h in enumerate(self.players[to].hand):
             if h in deckidxs:
                 self.deck[h].got_positive_value(value)
@@ -172,15 +198,15 @@ class Game:
         else:
             self.bot.someone_got_value(from_, to, value, positions)
 
-    def set_game_data(self, score, clues):
+    def set_game_data(self, score: int, clues: int) -> None:
         self.clueCount = clues
         self.scoreCount = score
 
-    def striked(self, strikes):
+    def striked(self, strikes: int) -> None:
         self.strikeCount = strikes
         self.bot.striked(self.currentPlayer)
 
-    def change_turn(self, player, turn_count):
+    def change_turn(self, player: int, turn_count: int) -> None:
         self.currentPlayer = player
         self.turnCount = turn_count
         self.bot.next_turn(player)
