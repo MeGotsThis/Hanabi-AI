@@ -38,7 +38,7 @@ Bots offered:
 
 # Setup & Running
 
-Requirements: 3.5 or higher (will be 3.6 for variable annotations), socketIO_client
+Requirements: 3.6, socketIO_client
 
 There are 4 executable files and 3 configuration files
 
