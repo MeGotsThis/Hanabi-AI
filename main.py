@@ -25,6 +25,9 @@ currentTablePosition: Optional[int] = None
 tablePlayers: List[str] = []
 readyToStart: bool = False
 game: Optional[Game] = None
+conn: socketIO_client.SocketIO
+botconfig: configparser.ConfigParser
+botCls: Type[Bot]
 
 
 def on_message(*args):
@@ -106,79 +109,144 @@ def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj) -> Any:
                 return error
 
 
-user: configparser.ConfigParser = configparser.ConfigParser()
-user.read('user.ini')
-botconfig: configparser.ConfigParser = configparser.ConfigParser()
-botconfig.read('bot.ini')
+def run():
+    global conn, botconfig, botCls
+    user: configparser.ConfigParser = configparser.ConfigParser()
+    user.read('user.ini')
+    botconfig = configparser.ConfigParser()
+    botconfig.read('bot.ini')
 
-print('Loading Bot AI')
-botModule = importlib.import_module(botconfig['BOT']['bot'] + '.bot')
-botCls: Type[Bot]
-botCls = botModule.Bot  # type: ignore
-print('Loaded ' + botCls.BOT_NAME)  # type: ignore
+    print('Loading Bot AI')
+    botModule = importlib.import_module(botconfig['BOT']['bot'] + '.bot')
+    botCls = botModule.Bot  # type: ignore
+    print('Loaded ' + botCls.BOT_NAME)  # type: ignore
 
-conn: socketIO_client.SocketIO
-conn = socketIO_client.SocketIO('keldon.net', 32221)
-conn.on('message', on_message)
+    conn = socketIO_client.SocketIO('keldon.net', 32221)
+    conn.on('message', on_message)
 
-print('Connected to keldon.net')
+    print('Connected to keldon.net')
 
 
-username: str = user['USER']['username']
-password: str = user['USER']['password']
-passSha: str
-passSha = hashlib.sha256(b'Hanabi password ' + password.encode()).hexdigest()
+    username: str = user['USER']['username']
+    password: str = user['USER']['password']
+    passBytes = b'Hanabi password ' + password.encode()
+    passSha: str
+    passSha = hashlib.sha256(passBytes).hexdigest()
 
-try:
-    login: dict = {'username': username, 'password': passSha}
-    conn.emit('message', {'type': 'login', 'resp': login})
-    conn.wait(seconds=1)
+    try:
+        login: dict = {'username': username, 'password': passSha}
+        conn.emit('message', {'type': 'login', 'resp': login})
+        conn.wait(seconds=1)
 
-    i: int = 0
-    d: dict
-    t: int
-    id: int
-    table: dict
-    while True:
-        print()
-        print('What would you like to do?')
-        print('(1) Create a table')
-        print('(2) Join a table')
-        print('(3) Rejoin a game')
-        print('(0) Quit')
-        try:
-            i = int(input('--> '))
-            if i < 1 or i > 3:
-                raise ValueError()
-        except ValueError:
-            break
+        i: int = 0
+        d: dict
+        t: int
+        id: int
+        table: dict
+        while True:
+            print()
+            print('What would you like to do?')
+            print('(1) Create a table')
+            print('(2) Join a table')
+            print('(3) Rejoin a game')
+            print('(0) Quit')
+            try:
+                i = int(input('--> '))
+                if i < 1 or i > 3:
+                    raise ValueError()
+            except ValueError:
+                break
 
-        conn.wait(seconds=waitTime)
+            conn.wait(seconds=waitTime)
 
-        if i in [1, 2]:
-            if i == 1:
-                name = input('Game Name --> ')
-                max_players = int_input('Max Players (2 - 5) --> ',
-                                        min=2, max=5)
-                print('Variant')
-                for variant in Variant:  # type: ignore
-                    print('({}) {}'.format(variant.value, variant.full_name))
-                variant = int_input(min=0, max=len(Variant) - 1)  # type: ignore
-                print('Allow Spectators? (y or 1 for yes)')
-                allow_spec: bool = input('--> ') in ['1', 'y', 'Y']
-                d = {'type': 'create_table',
-                     'resp': {'name': name,
-                              'max': max_players,
-                              'variant': variant,
-                              'allow_spec': allow_spec}}
-                conn.emit('message', d)
-            else:
+            if i in [1, 2]:
+                if i == 1:
+                    name = input('Game Name --> ')
+                    max_players = int_input('Max Players (2 - 5) --> ',
+                                            min=2, max=5)
+                    print('Variant')
+                    for variant in Variant:  # type: ignore
+                        print('({}) {}'.format(variant.value,
+                                               variant.full_name))
+                    variant = int_input(min=0, max=len(Variant) - 1)  # type: ignore
+                    print('Allow Spectators? (y or 1 for yes)')
+                    allow_spec: bool = input('--> ') in ['1', 'y', 'Y']
+                    d = {'type': 'create_table',
+                         'resp': {'name': name,
+                                  'max': max_players,
+                                  'variant': variant,
+                                  'allow_spec': allow_spec}}
+                    conn.emit('message', d)
+                else:
+                    while True:
+                        print('Join a table')
+                        print('(Blank) Refresh')
+                        print('''(    0) Don't Join A Table''')
+                        for id, table in sorted(tables.items()):
+                            if table['running']:
+                                continue
+                            print('({:>5}) {}, Players: {}/{}, Variant: '
+                                  '{}'.format(
+                                id, table['name'], table['num_players'],
+                                table['max_players'],
+                                Variant(table['variant']).full_name))
+                        try:
+                            t = int(input('--> '))
+                        except ValueError:
+                            conn.wait(seconds=waitTime)
+                            continue
+                        if t == 0:
+                            break
+                        conn.wait(seconds=waitTime)
+                        if t not in tables:
+                            print('Table does not exist')
+                            continue
+                        if tables[t]['running']:
+                            print('Game already started')
+                            continue
+                        if tables[t]['joined']:
+                            d = {'type': 'reattend_table',
+                                 'resp': {'table_id': t}}
+                        else:
+                            d = {'type': 'join_table',
+                                 'resp': {'table_id': t}}
+                        conn.emit('message', d)
+                        break
+
+                conn.wait(seconds=waitTime)
+                while currentTableId in tables and game is None:
+                    conn.wait(seconds=waitTime)
+                    if currentTableId in tables and game is None:
+                        print('Current Players', tablePlayers)
+                        print('(Blank) Refresh')
+                        print('(0) Abandon Game')
+                        if tables[currentTableId]['owned'] and readyToStart:
+                            print('(1) Start Game')
+                        try:
+                            i = int(input('--> '))
+                            if i == 0:
+                                conn.emit('message', {'type': 'leave_table',
+                                                      'resp': {}})
+                                break
+                            if (tables[currentTableId]['owned']
+                                    and readyToStart):
+                                if i == 1:
+                                    d = {'type': 'start_game', 'resp': {}}
+                                    conn.emit('message', d)
+                                    break
+                        except:
+                            conn.wait(seconds=waitTime)
+                            continue
+                conn.wait(seconds=waitTime)
+            elif i == 3:
                 while True:
-                    print('Join a table')
+                    print('Rejoin a game')
                     print('(Blank) Refresh')
-                    print('''(    0) Don't Join A Table''')
+                    print('''(    0) Don't Rejoin a Game''')
                     for id, table in sorted(tables.items()):
-                        if table['running']:
+                        if not table['running']:
+                            continue
+                        if table['running'] and not table['joined']:
                             continue
                         print('({:>5}) {}, Players: {}/{}, Variant: {}'.format(
                             id, table['name'], table['num_players'],
@@ -193,79 +261,24 @@ try:
                         break
                     conn.wait(seconds=waitTime)
                     if t not in tables:
-                        print('Table does not exist')
+                        print('Game does not exist')
                         continue
-                    if tables[t]['running']:
-                        print('Game already started')
+                    if not tables[t]['running']:
+                        print('Table has not yet started')
                         continue
-                    if tables[t]['joined']:
-                        d = {'type': 'reattend_table', 'resp': {'table_id': t}}
-                    else:
-                        d = {'type': 'join_table', 'resp': {'table_id': t}}
+                    d = {'type': 'reattend_table', 'resp': {'table_id': t}}
                     conn.emit('message', d)
                     break
-
-            conn.wait(seconds=waitTime)
-            while currentTableId in tables and game is None:
                 conn.wait(seconds=waitTime)
-                if currentTableId in tables and game is None:
-                    print('Current Players', tablePlayers)
-                    print('(Blank) Refresh')
-                    print('(0) Abandon Game')
-                    if tables[currentTableId]['owned'] and readyToStart:
-                        print('(1) Start Game')
-                    try:
-                        i = int(input('--> '))
-                        if i == 0:
-                            conn.emit('message', {'type': 'leave_table',
-                                                  'resp': {}})
-                            break
-                        if tables[currentTableId]['owned'] and readyToStart:
-                            if i == 1:
-                                d = {'type': 'start_game', 'resp': {}}
-                                conn.emit('message', d)
-                                break
-                    except:
-                        conn.wait(seconds=waitTime)
-                        continue
+
             conn.wait(seconds=waitTime)
-        elif i == 3:
-            while True:
-                print('Rejoin a game')
-                print('(Blank) Refresh')
-                print('''(    0) Don't Rejoin a Game''')
-                for id, table in sorted(tables.items()):
-                    if not table['running']:
-                        continue
-                    if table['running'] and not table['joined']:
-                        continue
-                    print('({:>5}) {}, Players: {}/{}, Variant: {}'.format(
-                        id, table['name'], table['num_players'],
-                        table['max_players'],
-                        Variant(table['variant']).full_name))
-                try:
-                    t = int(input('--> '))
-                except ValueError:
-                    conn.wait(seconds=waitTime)
-                    continue
-                if t == 0:
-                    break
+            while game is not None:
                 conn.wait(seconds=waitTime)
-                if t not in tables:
-                    print('Game does not exist')
-                    continue
-                if not tables[t]['running']:
-                    print('Table has not yet started')
-                    continue
-                d = {'type': 'reattend_table', 'resp': {'table_id': t}}
-                conn.emit('message', d)
-                break
-            conn.wait(seconds=waitTime)
+    finally:
+        conn.disconnect()
 
-        conn.wait(seconds=waitTime)
-        while game is not None:
-            conn.wait(seconds=waitTime)
-finally:
-    conn.disconnect()
+    print('Ended')
 
-print('Ended')
+
+if __name__ == '__main__':
+    run()
