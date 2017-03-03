@@ -109,12 +109,10 @@ def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj) -> Any:
                 return error
 
 
-def run():
+def run(username: str, password: str, botIni: str='bot.init'):
     global conn, botconfig, botCls
-    user: configparser.ConfigParser = configparser.ConfigParser()
-    user.read('user.ini')
     botconfig = configparser.ConfigParser()
-    botconfig.read('bot.ini')
+    botconfig.read(botIni)
 
     print('Loading Bot AI')
     botModule = importlib.import_module(botconfig['BOT']['bot'] + '.bot')
@@ -127,8 +125,6 @@ def run():
     print('Connected to keldon.net')
 
 
-    username: str = user['USER']['username']
-    password: str = user['USER']['password']
     passBytes = b'Hanabi password ' + password.encode()
     passSha: str
     passSha = hashlib.sha256(passBytes).hexdigest()
@@ -281,4 +277,6 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    user: configparser.ConfigParser = configparser.ConfigParser()
+    user.read('user.ini')
+    run(user['USER']['username'], user['USER']['password'], 'bot.ini')
