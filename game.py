@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Type
 
-from bot.bot import Bot
+from bot import bot
 from bot.card import Card
 from bot.player import Player
 from enums import Clue, Color, Suit, Rank, Value, Variant
@@ -12,13 +12,14 @@ class Game:
                  variant: Variant,
                  names: List[str],
                  botPosition: int,
-                 botCls: Type[Bot],
+                 botCls: Type['bot.Bot'],
                  **kwargs) -> None:
         self.connection: Any = connection
         self.variant: Variant  = variant
         self.numPlayers: int = len(names)
         self.botPosition: int = botPosition
-        self.bot: Bot = botCls(self, botPosition, names[botPosition], **kwargs)
+        self.bot: bot.Bot
+        self.bot = botCls(self, botPosition, names[botPosition], **kwargs)
         self.players: List[Player] = [self.bot.create_player(p, names[p])
                                       for p in range(self.numPlayers)]
         self.turnCount: int = -1
