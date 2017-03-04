@@ -1,6 +1,5 @@
 *.pyc
 .idea
-bot.ini
-simulator.ini
-user.ini
+*.ini
+!*.dist.ini
 game_test.py

@@ -1,6 +1,9 @@
+import argparse
 import configparser
+import getpass
 import hashlib
 import importlib
+import os.path
 import sys
 
 from collections import ChainMap
@@ -95,7 +98,8 @@ def on_message(*args):
         raise Exception()
 
 
-def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj) -> Any:
+def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj
+              ) -> Any:
     while True:
         try:
             i = int(input(prompt))
@@ -109,7 +113,7 @@ def int_input(prompt: str='-->', *, min=None, max=None, error=_errorObj) -> Any:
                 return error
 
 
-def run(username: str, password: str, botIni: str='bot.init'):
+def run(username: str, password: str, botIni: str='bot.init') -> None:
     global conn, botconfig, botCls
     botconfig = configparser.ConfigParser()
     botconfig.read(botIni)
@@ -277,6 +281,41 @@ def run(username: str, password: str, botIni: str='bot.init'):
 
 
 if __name__ == '__main__':
-    user: configparser.ConfigParser = configparser.ConfigParser()
-    user.read('user.ini')
-    run(user['USER']['username'], user['USER']['password'], 'bot.ini')
+    parser: argparse.ArgumentParser
+    parser = argparse.ArgumentParser(description='Run an AI bot on keldon.net')
+    parser.add_argument('-b', '--bot', default='bot.ini', help='bot ini')
+    parser.add_argument('-l', '--login', default='user.ini',
+                        help='user info ini')
+    parser.add_argument('-u', '--username', nargs='?', default=True,
+                        help='Keldon username')
+    parser.add_argument('-p', '--password', nargs='?', default=True,
+                        help='Keldon password')
+    args: argparse.Namespace = parser.parse_args()
+    askUsername: bool = False
+    askPassword: bool = False
+    username: str
+    password: str
+    if args.login is not None and os.path.isfile(args.login):
+        user: configparser.ConfigParser = configparser.ConfigParser()
+        user.read(args.login)
+        username = user['USER']['username']
+        password = user['USER']['password']
+    else:
+        askUsername = True
+        askPassword = True
+    if args.username is None:
+        askUsername = True
+        askPassword = True
+    elif isinstance(args.username, str):
+        askUsername = False
+        username = args.username
+    if args.password is None:
+        askPassword = True
+    elif isinstance(args.password, str):
+        askPassword = False
+        password = args.password
+    if askUsername:
+        username = input('Username: ')
+    if askPassword:
+        password = getpass.getpass('Password:')
+    run(username, password, args.bot)
