@@ -1,3 +1,4 @@
+import argparse
 import configparser
 import hashlib
 import json
@@ -35,8 +36,14 @@ def on_message(*args):
             messageHistory.append(message)
 
 
+parser: argparse.ArgumentParser
+parser = argparse.ArgumentParser(
+    description='Save a game from keldon.net in JSON format')
+parser.add_argument('-l', '--login', default='user.ini', help='user info ini')
+args: argparse.Namespace = parser.parse_args()
+
 user = configparser.ConfigParser()
-user.read('user.ini')
+user.read(args.login)
 
 conn = socketIO_client.SocketIO('keldon.net', 32221)
 conn.on('message', on_message)
