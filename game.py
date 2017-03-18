@@ -92,7 +92,7 @@ class Game:
         elif type == 'turn':
             self.change_turn(data['who'], data['num'])
         elif type == 'game_over':
-            pass
+            self.game_ended()
         else:
             raise Exception()
 
@@ -211,3 +211,6 @@ class Game:
         self.currentPlayer = player
         self.turnCount = turn_count
         self.bot.next_turn(player)
+
+    def game_ended(self) -> None:
+        self.bot.game_ended()
