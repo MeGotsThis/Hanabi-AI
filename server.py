@@ -146,6 +146,8 @@ class ServerGame:
             self.currentPlayer = (self.currentPlayer + 1) % len(self.players)
             self.updateMaxScore()
 
+        self.send('notify', {'type': 'game_over'})
+
         self.loss = self.strikes == 3
         if not self.loss:
             self.print("Players score {} points".format(self.score),
