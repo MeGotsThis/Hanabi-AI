@@ -6,22 +6,22 @@ A bot that communicates to other bots using global variables
 
 | Players   | Variant     | Avg. Score     | Perfect Rate | Loss Rate | Avg. Pass Score | Avg. Loss Score |
 | --------- | ----------- | -------------- | ------------ | --------- | --------------- | --------------- |
-| 2 Players | No Variant  | 24.551 ± 0.010 | 78.55%       | 0%        | 24.551 ± 0.010  | N/A             |
-| 3 Players | No Variant  | 24.844 ± 0.006 | 91.22%       | 0%        | 24.844 ± 0.006  | N/A             |
-| 4 Players | No Variant  | 24.796 ± 0.006 | 87.22%       | 0%        | 24.796 ± 0.006  | N/A             |
-| 5 Players | No Variant  | 24.772 ± 0.007 | 87.38%       | 0%        | 24.772 ± 0.007  | N/A             |
-| 2 Players | Black Suit  | 29.277 ± 0.014 | 69.55%       | 0%        | 29.277 ± 0.014  | N/A             |
-| 3 Players | Black Suit  | 29.740 ± 0.008 | 86.68%       | 0%        | 29.740 ± 0.008  | N/A             |
-| 4 Players | Black Suit  | 29.667 ± 0.009 | 82.61%       | 0%        | 29.667 ± 0.009  | N/A             |
-| 5 Players | Black Suit  | 29.760 ± 0.007 | 85.98%       | 0%        | 29.760 ± 0.007  | N/A             |
-| 2 Players | Rainbow     | 29.252 ± 0.014 | 68.43%       | 0%        | 29.252 ± 0.014  | N/A             |
-| 3 Players | Rainbow     | 29.740 ± 0.008 | 86.83%       | 0%        | 29.740 ± 0.008  | N/A             |
-| 4 Players | Rainbow     | 29.657 ± 0.009 | 81.85%       | 0%        | 29.657 ± 0.009  | N/A             |
-| 5 Players | Rainbow     | 29.740 ± 0.007 | 85.47%       | 0%        | 29.740 ± 0.007  | N/A             |
-| 2 Players | One of Each | 28.370 ± 0.021 | 47.83%       | 0%        | 28.370 ± 0.021  | N/A             |
-| 3 Players | One of Each | 29.037 ± 0.015 | 63.06%       | 0%        | 29.037 ± 0.015  | N/A             |
-| 4 Players | One of Each | 28.845 ± 0.017 | 55.67%       | 0%        | 28.845 ± 0.017  | N/A             |
-| 5 Players | One of Each | 28.865 ± 0.015 | 52.81%       | 0%        | 28.865 ± 0.015  | N/A             |
+| 2 Players | No Variant  | 24.551 ± 0.021 | 78.55%       | 0%        | 24.551 ± 0.021  | N/A             |
+| 3 Players | No Variant  | 24.844 ± 0.012 | 91.22%       | 0%        | 24.844 ± 0.012  | N/A             |
+| 4 Players | No Variant  | 24.796 ± 0.014 | 87.22%       | 0%        | 24.796 ± 0.014  | N/A             |
+| 5 Players | No Variant  | 24.772 ± 0.012 | 87.38%       | 0%        | 24.772 ± 0.012  | N/A             |
+| 2 Players | Black Suit  | 29.277 ± 0.027 | 69.55%       | 0%        | 29.277 ± 0.027  | N/A             |
+| 3 Players | Black Suit  | 29.740 ± 0.016 | 86.68%       | 0%        | 29.740 ± 0.016  | N/A             |
+| 4 Players | Black Suit  | 29.667 ± 0.017 | 82.61%       | 0%        | 29.667 ± 0.017  | N/A             |
+| 5 Players | Black Suit  | 29.760 ± 0.014 | 85.98%       | 0%        | 29.760 ± 0.014  | N/A             |
+| 2 Players | Rainbow     | 29.252 ± 0.027 | 68.43%       | 0%        | 29.252 ± 0.027  | N/A             |
+| 3 Players | Rainbow     | 29.740 ± 0.016 | 86.83%       | 0%        | 29.740 ± 0.016  | N/A             |
+| 4 Players | Rainbow     | 29.657 ± 0.017 | 81.85%       | 0%        | 29.657 ± 0.017  | N/A             |
+| 5 Players | Rainbow     | 29.740 ± 0.015 | 85.47%       | 0%        | 29.740 ± 0.015  | N/A             |
+| 2 Players | One of Each | 28.370 ± 0.042 | 47.83%       | 0%        | 28.370 ± 0.021  | N/A             |
+| 3 Players | One of Each | 29.037 ± 0.031 | 63.06%       | 0%        | 29.037 ± 0.031  | N/A             |
+| 4 Players | One of Each | 28.845 ± 0.033 | 55.67%       | 0%        | 28.845 ± 0.033  | N/A             |
+| 5 Players | One of Each | 28.865 ± 0.031 | 52.81%       | 0%        | 28.865 ± 0.031  | N/A             |
 
 ### 4 Players - No Variant
 
