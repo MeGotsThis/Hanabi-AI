@@ -71,11 +71,9 @@ class ServerGame:
         self.lastAction: int = (self.currentPlayer - 1) % players
 
     def isGameComplete(self) -> bool:
-        if self.strikes == 3 or self.score == 25:
+        if self.strikes == 3 or self.score >= self.maxScore:
             return True
         if self.turnCount > (self.endTurn or math.inf):
-            return True
-        if self.score >= self.maxScore:
             return True
         return False
 
