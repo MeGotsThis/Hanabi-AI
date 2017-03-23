@@ -1,6 +1,6 @@
-# Random Bot
+# Cheat Bot
 
-Plays randomly between cluing color, cluing number, playing a card, discard a card
+A bot that communicates to other bots using global variables
 
 ## Scores
 
