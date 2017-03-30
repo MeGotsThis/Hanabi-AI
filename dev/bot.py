@@ -358,6 +358,80 @@ class Bot(bot.Bot):
 
         return False
 
+    def maybeEarlySaveCriticalCard(self, urgent):
+        if self.game.clueCount == 0:
+            assert False
+
+        selfHandState = self.handState(self.position)
+
+        if not urgent and HandState.Playable in selfHandState:
+            return False
+
+        if self.game.turnCount == 0:
+            for i in range(1, self.game.numPlayers):
+                player = (self.position + i) % self.game.numPlayers
+                bestClue = self.bestEarlyHintForPlayer(player, False)
+                if bestClue is not None:
+                    if bestClue.color is not None:
+                        return False
+                    if bestClue.value == Value.V1:
+                        if bestClue.fitness >= 60:
+                            return False
+        was1Clued = self.game.turnCount != 0
+        hint = Hint()
+        distance = range(1, self.game.numPlayers)
+        if urgent:
+            distance = range(1, 2)
+        for i in distance:
+            player = (self.position + i) % self.game.numPlayers
+            hand = self.game.players[player].hand
+            discard = self.discardSlot(self.handState(player))
+            for v in [Value.V2, Value.V5]:
+                tagged = []
+                valueMDuplicate = 0
+                valueDuplicate = 0
+                valueUseless = 0
+                numWasClued = 0
+                for i, h in enumerate(hand):
+                    card = self.game.deck[h]
+                    if card.rank == v:
+                        tagged.append(i)
+                        if card.clued:
+                            numWasClued += 1
+                        if self.isWorthless(card.suit, card.rank):
+                            valueUseless += 1
+                        if self.locatedCount[card.suit][card.rank]:
+                            valueDuplicate += 1
+                        else:
+                            for h in self.hand:
+                                hcard = self.game.deck[h]
+                                if (hcard.maybeColor == card.suit
+                                        and hcard.maybeValue == card.rank):
+                                    valueDuplicate += 1
+                        if self.doesCardMatchHand(card.deckPosition):
+                            valueMDuplicate += 1
+                taggedDiscard = discard in tagged
+                if not (urgent and taggedDiscard):
+                    continue
+                saveFitness = 0
+                if (len(tagged) > numWasClued and valueDuplicate == 0
+                        and valueMDuplicate == 0 and valueUseless == 0):
+                    if v == Value.V2 and not was1Clued:
+                        saveFitness = len(tagged) - numWasClued
+                        saveFitness += taggedDiscard
+                        saveFitness *= 2
+                    else:
+                        saveFitness = len(tagged) - numWasClued
+                if saveFitness > 0 and saveFitness > hint.fitness:
+                    hint.color = None
+                    hint.value = v
+                    hint.to = player
+                    hint.fitness = saveFitness
+        if hint.fitness > 0:
+            hint.give(self)
+            return True
+        return False
+
     def maybeSaveCriticalCard(self, urgent):
         if self.game.clueCount == 0:
             assert False
@@ -909,18 +983,120 @@ class Bot(bot.Bot):
             if card.color is not None and card.value is not None:
                 continue
             if card.color == deckCard.suit:
-                if not card.cluedAsDiscard:
-                    continue
-                if card.maybeValue is not None:
+                maybeValue = card.maybeValue
+                if maybeValue is not None:
+                    if maybeValue == deckCard.rank:
+                        return True
                     continue
                 if deckCard.rank in card.possibleValues:
                     return True
             if card.value == deckCard.rank:
-                if card.maybeColor is not None:
+                maybeColor = card.maybeColor
+                if maybeColor is not None:
+                    if maybeColor == deckCard.suit:
+                        return True
                     continue
                 if deckCard.suit in card.possibleColors:
                     return True
         return False
+
+    def bestEarlyHintForPlayer(self, player, highValue):
+        assert player != self.position
+        hand = self.game.players[player].hand
+
+        needToTag = {c: 0 for c in self.colors}
+        for c in self.colors:
+            nextValue = len(self.game.playedCards[c]) + 1
+            while nextValue < 6:
+                if not self.locatedCount[c][nextValue]:
+                    needToTag[c] = nextValue
+                    break
+                nextValue += 1
+
+        handState = self.handState(player)
+        discard = self.discardSlot(handState)
+
+        numClued = 0
+        for h in hand:
+            card = self.game.deck[h]
+            if card.clued:
+                numClued += 1
+
+        best_so_far = Hint()
+        best_so_far.to = player
+        for c in self.colors:
+            tagged = []
+            for i in range(len(hand)):
+                card = self.game.deck[hand[i]]
+                if card.suit & c:
+                    tagged.append(i)
+            if not tagged:
+                continue
+
+            colorFitness = 0
+
+            # Decision Here
+            (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
+             needFix, numNewTagged, badClarify,
+             fixPlayer, fixColor, fixValue
+             ) = self.playOrderColorClue(player, c)
+            goodTag = numNewTagged - badClarify - numWorthless
+            if (not needFix and isNewestGood and values[0][1] is not None
+                and maybeDuplicate == 0
+                and goodTag > 0):
+                baseValue, baseSave = 22, 11
+                colorFitness = (numPlay * (baseValue + 6 - (values[0][1]))
+                                + numWorthless)
+
+            if colorFitness > best_so_far.fitness:
+                best_so_far.fitness = colorFitness
+                best_so_far.color = c
+                best_so_far.value = None
+
+        for v in self.values:
+            tagged = []
+            for i in range(len(hand)):
+                card = self.game.deck[hand[i]]
+                if card.rank == v:
+                    tagged.append(i)
+            if not tagged:
+                continue
+
+            looksLikeSave = False
+            if HandState.Worthless not in handState and discard in tagged:
+                saveColors = self.matchCriticalCardValue(v)
+                looksLikeSave = bool(saveColors) and v != Value.V5
+
+            valueFitness = 0
+
+            # Decision Here
+            if v < self.lowestPlayableValue:
+                pass
+            else:
+                (playOrder, numPlay, numFuture, numWorthless, maybeDuplicate,
+                 numPlayMismatch, numFutureMismatch, numCompleteMismatch,
+                 numNewTagged
+                 ) = self.playOrderValueClue(player, v)
+                if (numNewTagged >= 1 and numPlay >= 1
+                        and maybeDuplicate == 0
+                        and numPlayMismatch == 0
+                        and numFutureMismatch == 0
+                        and numCompleteMismatch == 0):
+                    baseValue, baseFuture, baseSave = 20, 5, 20
+                    valueFitness = (numPlay * (baseValue + 6 - v)
+                                    + numFuture * baseFuture
+                                    + numWorthless - looksLikeSave * baseSave)
+
+            if valueFitness > best_so_far.fitness:
+                best_so_far.fitness = valueFitness
+                best_so_far.color = None
+                best_so_far.value = v
+
+        if best_so_far.fitness == 0:
+            return None
+        if highValue and best_so_far.fitness < 28:
+            return None
+        return best_so_far
 
     def bestHintForPlayer(self, player):
         assert player != self.position
@@ -1054,6 +1230,23 @@ class Bot(bot.Bot):
             return True
         return False
 
+    def maybeGiveEarlyGameHint(self, highValue):
+        bestHint = Hint()
+        for i in range(1, self.game.numPlayers):
+            player = (self.position + i) % self.game.numPlayers
+            candidate = self.bestEarlyHintForPlayer(player, highValue)
+            if candidate is not None and candidate.fitness >= 0:
+                handState = self.handState(player)
+                if HandState.Playable not in handState:
+                    candidate.fitness += (self.game.numPlayers - i) * 2
+            if candidate is not None and candidate.fitness > bestHint.fitness:
+                bestHint = candidate
+        if bestHint.fitness <= 0:
+            return False
+
+        bestHint.give(self)
+        return True
+
     def maybeGiveHelpfulHint(self):
         if self.game.clueCount == 0:
             assert False
@@ -1064,8 +1257,8 @@ class Bot(bot.Bot):
             candidate = self.bestHintForPlayer(player)
             if candidate is not None and candidate.fitness >= 0:
                 handState = self.handState(player)
-                if HandState.Playable in handState:
-                    candidate.fitness += (self.game.numPlayers - i) * 3
+                if HandState.Playable not in handState:
+                    candidate.fitness += (self.game.numPlayers - i) * 2
             if candidate is not None and candidate.fitness > bestHint.fitness:
                 bestHint = candidate
         if bestHint.fitness <= 0:
@@ -1681,18 +1874,31 @@ class Bot(bot.Bot):
     def pleaseMakeMove(self, can_clue, can_discard):
         assert self.game.currentPlayer == self.position
 
-        if can_clue and self.maybeFixBeforeMisplay():
-            return
-        if can_clue and self.maybeSaveCriticalCard(True):
-            return
-        if can_discard and self.maybeDiscardForCriticalCard():
-            return
-        if self.maybePlayCard():
-            return
-        if can_clue and self.maybeGiveHelpfulHint():
-            return
-        if can_clue and self.maybeSaveCriticalCard(False):
-            return
+        stage = self.game_stage()
+        if stage == GameStage.Early:
+            if can_clue and self.maybeEarlySaveCriticalCard(True):
+                return
+            if can_clue and self.maybeGiveEarlyGameHint(True):
+                return
+            if self.maybePlayCard():
+                return
+            if can_clue and self.maybeGiveEarlyGameHint(False):
+                return
+            if can_clue and self.maybeEarlySaveCriticalCard(False):
+                return
+        else:
+            if can_clue and self.maybeFixBeforeMisplay():
+                return
+            if can_clue and self.maybeSaveCriticalCard(True):
+                return
+            if can_discard and self.maybeDiscardForCriticalCard():
+                return
+            if self.maybePlayCard():
+                return
+            if can_clue and self.maybeGiveHelpfulHint():
+                return
+            if can_clue and self.maybeSaveCriticalCard(False):
+                return
 
         if not can_discard:
             if self.giveHintOnNoDiscards():

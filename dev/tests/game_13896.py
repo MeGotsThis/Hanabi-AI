@@ -8,7 +8,8 @@ class Game13896(GameSimulatorTesting):
         # Deck size 34, Cathy, Clues 6, Score 0
         self.load_game(r'games\13896.json', position=2, turn=2, botcls=Bot)
         self.send_action()
-        self.connection.assert_card_played_hand(0)
+        #self.connection.assert_card_played_hand(0)
+        self.connection.assert_clue_value(3, Value.V1)
 
     def test_turn_6(self):
         # Deck size 33, Cathy, Clues 3, Score 1
@@ -20,7 +21,8 @@ class Game13896(GameSimulatorTesting):
         # Deck size 31, Cathy, Clues 1, Score 3
         self.load_game(r'games\13896.json', position=2, turn=10, botcls=Bot)
         self.send_action()
-        self.connection.assert_clue_color(3, Color.Blue)
+        #self.connection.assert_clue_color(3, Color.Blue)
+        self.connection.assert_clue_color(1, Color.Yellow)
 
     def test_turn_14(self):
         # Deck size 28, Cathy, Clues 0, Score 6
