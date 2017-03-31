@@ -17,6 +17,13 @@ class Game13896(GameSimulatorTesting):
         self.send_action()
         self.connection.assert_clue_color(3, Color.Purple)
 
+    def test_turn_6_alt(self):
+        # Deck size 33, Cathy, Clues 3, Score 1
+        self.load_game(r'games\13896.json', position=2, turn=5, botcls=Bot)
+        self.send_play_card(2, Color.Blue, Value.V4)
+        self.send_action()
+        self.connection.assert_clue_color(0, Color.Blue)
+
     def test_turn_10(self):
         # Deck size 31, Cathy, Clues 1, Score 3
         self.load_game(r'games\13896.json', position=2, turn=10, botcls=Bot)
