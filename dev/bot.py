@@ -297,6 +297,10 @@ class Bot(bot.Bot):
                     card = self.game.deck[c]
                     if card.color == color and card.value == value:
                         return card.deckPosition
+                    if p is self:
+                        if (maybe and card.maybeColor == color
+                                and card.maybeValue == value):
+                            return card.deckPosition
             elif p is self:
                 for c in p.hand:
                     card = self.game.deck[c]
@@ -883,7 +887,7 @@ class Bot(bot.Bot):
             scoreTagged = len(self.game.playedCards[c])
             for v in self.values[scoreTagged:self.maxPlayValue[c]]:
                 if self.isCluedSomewhere(c, v, self.position, maybe=True):
-                    deckIdx = self.cluedCard(c, v, self.position)
+                    deckIdx = self.cluedCard(c, v, self.position, maybe=True)
                     card = self.game.deck[deckIdx]
                     if deckIdx in tagged and card.cluedAsDiscard:
                         break
@@ -897,6 +901,7 @@ class Bot(bot.Bot):
             elif scoreTagged < value - 1:
                 futureColors.append(c)
         neededColors = playColors + futureColors
+        numNeed = len(neededColors)
         playOrder = []
         futureOrder = []
         worthlessOrder = []
@@ -941,7 +946,8 @@ class Bot(bot.Bot):
                         numPlay += 1
                     colorUsed.append(card.suit)
                 else:
-                    numPlayMismatch += 1
+                    if len(colorUsed) < numNeed:
+                        numPlayMismatch += 1
                 if card.suit not in neededColors:
                     numCompleteMismatch += 1
             elif i < len(playColors) + len(futureColors):
