@@ -26,6 +26,22 @@ class HandState(Enum):
     Saved = auto()
 
 
+cluePlayWeight = {
+    Value.V1: 3,
+    Value.V2: 5,
+    Value.V3: 2,
+    Value.V4: 1,
+    Value.V5: 0,
+    }
+clueFutureWeight = {
+    Value.V1: 0,
+    Value.V2: 2,
+    Value.V3: 0,
+    Value.V4: 0,
+    Value.V5: 0,
+    }
+
+
 class Bot(bot.Bot):
     '''
     Multi-tag Bot
@@ -1051,7 +1067,8 @@ class Bot(bot.Bot):
                 and maybeDuplicate == 0
                 and goodTag > 0):
                 baseValue, baseSave = 22, 11
-                colorFitness = (numPlay * (baseValue + 6 - (values[0][1]))
+                baseValue += cluePlayWeight[values[0][1]]
+                colorFitness = (numPlay * baseValue
                                 + numWorthless)
 
             if colorFitness > best_so_far.fitness:
@@ -1089,7 +1106,9 @@ class Bot(bot.Bot):
                         and numFutureMismatch == 0
                         and numCompleteMismatch == 0):
                     baseValue, baseFuture, baseSave = 20, 5, 20
-                    valueFitness = (numPlay * (baseValue + 6 - v)
+                    baseValue += cluePlayWeight[v]
+                    baseFuture += clueFutureWeight[v]
+                    valueFitness = (numPlay * baseValue
                                     + numFuture * baseFuture
                                     + numWorthless - looksLikeSave * baseSave)
 
@@ -1163,6 +1182,7 @@ class Bot(bot.Bot):
                 and maybeDuplicate == 0
                 and goodTag > 0):
                 baseValue, baseSave = 22, 11
+                baseValue += cluePlayWeight[values[0][1]]
                 colorFitness = (numPlay * baseValue
                                 + numWorthless
                                 - looksLikeSave * baseSave)
@@ -1206,6 +1226,8 @@ class Bot(bot.Bot):
                     baseValue, baseFuture, baseSave = 20, 7, 20
                     if v == Value.V5:
                         baseValue, baseFuture, baseSave = 7, 2, 7
+                    baseValue += cluePlayWeight[v]
+                    baseFuture += clueFutureWeight[v]
                     valueFitness = (numPlay * baseValue
                                     + numFuture * baseFuture
                                     + numWorthless
