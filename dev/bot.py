@@ -1673,7 +1673,7 @@ class Bot(bot.Bot):
         card.state = CardState.Play
         self.seePublicCard(card.suit, card.rank)
 
-    def matchCriticalCardColor(self, color):
+    def matchCriticalCardColor(self, color, useEyeSight=False):
         if self.colorComplete[color]:
             return []
         # Not saving 5's with a color clue
@@ -1689,10 +1689,13 @@ class Bot(bot.Bot):
                     continue
                 if self.locatedCount[color][v]:
                     continue
+                if useEyeSight:
+                    if self.eyesightCount[color][v] == v.num_copies:
+                        continue
                 possibleValues.append(v)
         return possibleValues
 
-    def matchCriticalCardValue(self, value):
+    def matchCriticalCardValue(self, value, useEyeSight=False):
         if value == Value.V5:
             possibleColors = []
             for c in self.colors:
@@ -1700,6 +1703,9 @@ class Bot(bot.Bot):
                     continue
                 if not self.isUseful(c, value):
                     continue
+                if useEyeSight:
+                    if self.eyesightCount[c][value] == value.num_copies:
+                        continue
                 possibleColors.append(c)
             return possibleColors
         # 2 saves maybe
@@ -1754,7 +1760,7 @@ class Bot(bot.Bot):
             possibleValues.append(v)
 
         numToComplete = self.maxPlayValue[color] - score
-        criticalValues = self.matchCriticalCardColor(color)
+        criticalValues = self.matchCriticalCardColor(color, useEyeSight=True)
         criticalClue = (HandState.Worthless not in handState
                             and discard in card_indices)
         if HandState.Worthless not in handState and discard in card_indices:
@@ -1849,7 +1855,7 @@ class Bot(bot.Bot):
         handState = self.handState(to)
         discard = self.discardSlot(handState)
 
-        criticalColors = self.matchCriticalCardValue(value)
+        criticalColors = self.matchCriticalCardValue(value, useEyeSight=True)
         criticalClue = ((HandState.Worthless not in handState
                          and discard in card_indices)
                         or value == Value.V5)
@@ -1905,6 +1911,7 @@ class Bot(bot.Bot):
                 if criticalState or criticalState is None:
                     if not wasClued[i]:
                         knol.cluedAsDiscard = True
+                        knol.playWorthless = False
                         for c in criticalColors:
                             if knol.cannotBeColor(c):
                                 continue
