@@ -1246,10 +1246,57 @@ class Bot(bot.Bot):
 
     def bestCardToPlay(self):
         handState = self.handState(self.position)
-        for i, hs in reversed(list(enumerate(handState))):
+        handInfo = list(enumerate(zip(handState, self.hand)))
+
+        lowestValue = 6
+        index = None
+        for i, (hs, h) in reversed(handInfo):
             if hs == HandState.Playable:
-                return i
-        return None
+                card = self.game.deck[h]
+                value = card.maybeValue
+                passed = False
+                for c in card.maybeColors:
+                    nextClued = self.isCluedSomewhere(
+                        c, value + 1, player=self.position, strict=True)
+                    if nextClued:
+                        passed = True
+                if not passed:
+                    continue
+                if value.value < lowestValue:
+                    index = i
+                    lowestValue = value.value
+        if index is not None:
+            return index
+
+        lowestValue = 6
+        index = None
+        for i, (hs, h) in reversed(handInfo):
+            if hs == HandState.Playable:
+                card = self.game.deck[h]
+                value = card.maybeValue
+                passed = False
+                for c in card.maybeColors:
+                    nextClued = self.isCluedSomewhere(c, value + 1, maybe=True)
+                    if nextClued:
+                        passed = True
+                if not passed:
+                    continue
+                if value.value < lowestValue:
+                    index = i
+                    lowestValue = value.value
+        if index is not None:
+            return index
+
+        lowestValue = 6
+        index = None
+        for i, (hs, h) in reversed(handInfo):
+            if hs == HandState.Playable:
+                card = self.game.deck[h]
+                value = card.maybeValue
+                if value.value < lowestValue:
+                    index = i
+                    lowestValue = value.value
+        return index
 
     def maybePlayCard(self):
         best_index = self.bestCardToPlay()
@@ -1581,6 +1628,8 @@ class Bot(bot.Bot):
             for p in range(self.game.numPlayers):
                 for i in range(len(self.game.players[p].hand)):
                     knol = self.game.deck[self.game.players[p].hand[i]]
+                    beforeDiscard = knol.cluedAsDiscard
+                    beforePlay = knol.cluedAsPlay
                     knol.update(p == self.position)
                     if (knol.clued and knol.color is None
                             and knol.value is not None
@@ -1596,6 +1645,9 @@ class Bot(bot.Bot):
                                 continue
                             clues.append(clueState)
                         self.reevaluateClue(clues, p)
+                        done = False
+                    if (beforeDiscard != knol.cluedAsDiscard
+                            or beforePlay != knol.cluedAsPlay):
                         done = False
             t = not self.updateLocatedCount()
             done = t and done

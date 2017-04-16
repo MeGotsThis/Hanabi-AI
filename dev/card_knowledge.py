@@ -43,6 +43,17 @@ class CardKnowledge(card.Card):
         return result
 
     @property
+    def maybeColors(self):
+        if self.color is not None:
+            return [self.color]
+        if self.value is not None:
+            if self.playColors:
+                return self.playColors
+            if self.discardColors:
+                return self.discardColors
+        return []
+
+    @property
     def maybeColor(self):
         if self.color is not None:
             return self.color
@@ -323,6 +334,8 @@ class CardKnowledge(card.Card):
                     if self.discardValues[0] == score + 1:
                         return True
                 elif not self.discardValues:
+                    self.cluedAsDiscard = False
+                    self.cluedAsPlay = True
                     return True
         return False
 
