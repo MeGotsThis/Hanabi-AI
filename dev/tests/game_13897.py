@@ -49,7 +49,8 @@ class Game13897(GameSimulatorTesting):
         self.send_action()
         #self.connection.assert_clue_color(2, Color.Purple)
         #self.connection.assert_clue_color(4, Color.Yellow)
-        self.connection.assert_clue_value(4, Value.V2)
+        #self.connection.assert_clue_value(4, Value.V2)
+        self.connection.assert_clue_value(3, Value.V2)
 
     def test_turn_33(self):
         # Deck size 11, Bob, Clues 0, Score 11

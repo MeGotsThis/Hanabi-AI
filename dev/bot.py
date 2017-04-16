@@ -1089,6 +1089,8 @@ class Bot(bot.Bot):
             if HandState.Worthless not in handState and discard in tagged:
                 saveColors = self.matchCriticalCardValue(v)
                 looksLikeSave = bool(saveColors) and v != Value.V5
+            if v == self.lowestPlayableValue:
+                looksLikeSave = False
 
             valueFitness = 0
 
@@ -1207,6 +1209,8 @@ class Bot(bot.Bot):
             if HandState.Worthless not in handState and discard in tagged:
                 saveColors = self.matchCriticalCardValue(v)
                 looksLikeSave = bool(saveColors) or v == Value.V5
+            if v == self.lowestPlayableValue:
+                looksLikeSave = False
 
             valueFitness = 0
 
