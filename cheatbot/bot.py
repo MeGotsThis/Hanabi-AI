@@ -100,7 +100,7 @@ class Bot(bot.Bot):
             for v in Value:
                 if v <= ci.value:
                     continue
-                located = self.who_has(ci.color, ci.value)
+                located = self.who_has(ci.color, v)
                 if located:
                     playWeights[i] += 1
         maxWeight: int = max(playWeights)
