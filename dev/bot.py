@@ -136,6 +136,9 @@ class Bot(bot.Bot):
             return GameStage.Early
         if self.game.deckCount <= len(self.game.players):
             return GameStage.End
+        moreToPlay = sum(self.maxPlayValue.values()) - self.game.scoreCount
+        if moreToPlay <= len(self.game.players):
+            return GameStage.End
         return GameStage.Mid
 
     def isNowPlayable(self, color, value):
@@ -1346,6 +1349,82 @@ class Bot(bot.Bot):
         bestHint.give(self)
         return True
 
+    def maybeSpendEndGameClue(self):
+        moreToPlay = sum(self.maxPlayValue.values()) - self.game.scoreCount
+        shouldClue = moreToPlay <= self.game.clueCount
+        hs = self.handState(self.position)
+        if HandState.SoonPlay in hs:
+            shouldClue = True
+        elif self.game.clueCount == 1:
+            player = (self.position + 1) % self.game.numPlayers
+            hs = self.handState(player)
+            if HandState.Playable not in hs and HandState.SoonPlay in hs:
+                shouldClue = False
+
+        if not shouldClue:
+            return False
+
+        hint = Hint()
+        for i in range(1, self.game.numPlayers):
+            player = (self.position + i) % self.game.numPlayers
+            hand = self.game.players[player].hand
+
+            for v in self.values[:self.lowestPlayableValue-1]:
+                tagged = 0
+                match = 0
+                for h in hand:
+                    card = self.game.deck[h]
+                    if card.rank == v:
+                        if card.value is None:
+                            tagged += 1
+                        else:
+                            match += 1
+                if tagged or match:
+                    base = 1
+                    if v == Value.V5:
+                        base = 100
+                    elif v < self.lowestPlayableValue:
+                        base = 20
+                    fitness = tagged * base + match * 5 + i
+                    if fitness > hint.fitness:
+                        hint.fitness = fitness
+                        hint.to = player
+                        hint.color = None
+                        hint.value = v
+            for c in self.colors:
+                tagged = 0
+                matched = 0
+                includeFive = False
+                includeNonFive = False
+                for h in hand:
+                    card = self.game.deck[h]
+                    if card.suit & c:
+                        matched += 1
+                        if card.color is None or not card.positiveClueColor:
+                            tagged += 1
+                        if card.rank == Value.V5 and card.value == Value.V5:
+                            includeFive = True
+                        if card.rank != Value.V5 and card.value is None:
+                            includeNonFive = True
+                if tagged:
+                    fitness = 0
+                    if self.colorComplete[c]:
+                        fitness = tagged * 20 + i
+                    if (includeFive and not includeNonFive
+                            and (len(self.game.playedCards[c]) == 4
+                                 or matched == 1)):
+                        fitness = 200 + i
+                    if fitness > hint.fitness:
+                        hint.fitness = fitness
+                        hint.to = player
+                        hint.color = c
+                        hint.value = None
+        if hint.fitness:
+            hint.give(self)
+            return True
+        else:
+            return False
+
     def giveHintOnNoDiscards(self):
         hint = Hint()
         for i in range(1, self.game.numPlayers):
@@ -1989,6 +2068,9 @@ class Bot(bot.Bot):
             if can_clue and self.maybeGiveHelpfulHint():
                 return
             if can_clue and self.maybeSaveCriticalCard(False):
+                return
+        if stage == GameStage.End:
+            if can_clue and self.maybeSpendEndGameClue():
                 return
 
         if not can_discard:
