@@ -103,6 +103,10 @@ class Bot(bot.Bot):
                 located = self.who_has(ci.color, v)
                 if located:
                     playWeights[i] += 1
+                    if self.position in located:
+                        located.remove(self.position)
+                    if len(located) > 0:
+                        playWeights[i] += 1
         maxWeight: int = max(playWeights)
         if maxWeight:
             self.play_card(playWeights.index(maxWeight))

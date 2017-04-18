@@ -6,22 +6,22 @@ A bot that communicates to other bots using global variables
 
 | Players   | Variant     | Avg. Score     | Perfect Rate | Loss Rate | Avg. Pass Score | Avg. Loss Score |
 | --------- | ----------- | -------------- | ------------ | --------- | --------------- | --------------- |
-| 2 Players | No Variant  | 24.558 ± 0.020 | 78.86%       | 0%        | 24.558 ± 0.020  | N/A             |
-| 3 Players | No Variant  | 24.854 ± 0.011 | 91.65%       | 0%        | 24.854 ± 0.011  | N/A             |
-| 4 Players | No Variant  | 24.781 ± 0.014 | 87.88%       | 0%        | 24.781 ± 0.014  | N/A             |
-| 5 Players | No Variant  | 24.813 ± 0.012 | 88.56%       | 0%        | 24.813 ± 0.012  | N/A             |
-| 2 Players | Black Suit  | 29.285 ± 0.027 | 69.73%       | 0%        | 29.285 ± 0.027  | N/A             |
-| 3 Players | Black Suit  | 29.746 ± 0.016 | 87.12%       | 0%        | 29.746 ± 0.016  | N/A             |
-| 4 Players | Black Suit  | 29.678 ± 0.017 | 83.14%       | 0%        | 29.678 ± 0.017  | N/A             |
-| 5 Players | Black Suit  | 29.771 ± 0.014 | 86.75%       | 0%        | 29.771 ± 0.014  | N/A             |
-| 2 Players | Rainbow     | 29.297 ± 0.027 | 70.12%       | 0%        | 29.297 ± 0.027  | N/A             |
-| 3 Players | Rainbow     | 29.746 ± 0.015 | 86.76%       | 0%        | 29.746 ± 0.015  | N/A             |
-| 4 Players | Rainbow     | 29.668 ± 0.017 | 82.59%       | 0%        | 29.668 ± 0.017  | N/A             |
-| 5 Players | Rainbow     | 29.769 ± 0.014 | 86.33%       | 0%        | 29.769 ± 0.014  | N/A             |
-| 2 Players | One of Each | 28.378 ± 0.041 | 48.04%       | 0%        | 28.378 ± 0.042  | N/A             |
-| 3 Players | One of Each | 29.057 ± 0.030 | 63.67%       | 0%        | 29.057 ± 0.030  | N/A             |
-| 4 Players | One of Each | 28.870 ± 0.033 | 56.83%       | 0%        | 28.870 ± 0.033  | N/A             |
-| 5 Players | One of Each | 28.914 ± 0.030 | 54.33%       | 0%        | 28.914 ± 0.030  | N/A             |
+| 2 Players | No Variant  | 24.562 ± 0.020 | 78.85%       | 0%        | 24.562 ± 0.020  | N/A             |
+| 3 Players | No Variant  | 24.855 ± 0.011 | 91.72%       | 0%        | 24.855 ± 0.011  | N/A             |
+| 4 Players | No Variant  | 24.781 ± 0.014 | 87.76%       | 0%        | 24.781 ± 0.014  | N/A             |
+| 5 Players | No Variant  | 24.815 ± 0.012 | 88.66%       | 0%        | 24.815 ± 0.012  | N/A             |
+| 2 Players | Black Suit  | 29.291 ± 0.027 | 69.89%       | 0%        | 29.291 ± 0.027  | N/A             |
+| 3 Players | Black Suit  | 29.750 ± 0.015 | 87.25%       | 0%        | 29.750 ± 0.015  | N/A             |
+| 4 Players | Black Suit  | 29.679 ± 0.017 | 83.17%       | 0%        | 29.679 ± 0.017  | N/A             |
+| 5 Players | Black Suit  | 29.771 ± 0.014 | 86.79%       | 0%        | 29.771 ± 0.014  | N/A             |
+| 2 Players | Rainbow     | 29.299 ± 0.027 | 70.08%       | 0%        | 29.299 ± 0.027  | N/A             |
+| 3 Players | Rainbow     | 29.748 ± 0.015 | 86.85%       | 0%        | 29.748 ± 0.015  | N/A             |
+| 4 Players | Rainbow     | 29.674 ± 0.017 | 82.81%       | 0%        | 29.674 ± 0.017  | N/A             |
+| 5 Players | Rainbow     | 29.771 ± 0.013 | 86.45%       | 0%        | 29.771 ± 0.013  | N/A             |
+| 2 Players | One of Each | 28.384 ± 0.041 | 48.03%       | 0%        | 28.384 ± 0.042  | N/A             |
+| 3 Players | One of Each | 29.064 ± 0.030 | 63.67%       | 0%        | 29.064 ± 0.030  | N/A             |
+| 4 Players | One of Each | 28.875 ± 0.033 | 56.84%       | 0%        | 28.875 ± 0.033  | N/A             |
+| 5 Players | One of Each | 28.915 ± 0.030 | 54.24%       | 0%        | 28.915 ± 0.030  | N/A             |
 
 ### 4 Players - No Variant
 
@@ -31,20 +31,20 @@ Variant: No Variant
 Players: 4
 
 Number of Games: 10000
-Number of Best Score: 8788
+Number of Best Score: 8776
 Number of Losses: 0
 
 All Games
 Average Score: 24.78070
 Median Score: 25.00000
-Standard Deviation: 0.68997
-Standard Error: 0.00690
+Standard Deviation: 0.68531
+Standard Error: 0.00685
 
 Non-Loss Games
 Average Score: 24.78070
 Median Score: 25.00000
-Standard Deviation: 0.68997
-Standard Error: 0.00690
+Standard Deviation: 0.68531
+Standard Error: 0.00685
 
 Loss Games
 Average Score: 0.00000
@@ -53,13 +53,13 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 25: 8788
-Score 24: 594
-Score 23: 368
-Score 22: 180
-Score 21: 43
-Score 20: 17
-Score 19: 6
+Score 25: 8776
+Score 24: 608
+Score 23: 371
+Score 22: 177
+Score 21: 42
+Score 20: 18
+Score 19: 4
 Score 18: 2
 Score 17: 2
 Score 16: 0
@@ -117,20 +117,20 @@ Variant: No Variant
 Players: 5
 
 Number of Games: 10000
-Number of Best Score: 8856
+Number of Best Score: 8866
 Number of Losses: 0
 
 All Games
-Average Score: 24.81250
+Average Score: 24.81450
 Median Score: 25.00000
-Standard Deviation: 0.60430
-Standard Error: 0.00604
+Standard Deviation: 0.59960
+Standard Error: 0.00600
 
 Non-Loss Games
-Average Score: 24.81250
+Average Score: 24.81450
 Median Score: 25.00000
-Standard Deviation: 0.60430
-Standard Error: 0.00604
+Standard Deviation: 0.59960
+Standard Error: 0.00600
 
 Loss Games
 Average Score: 0.00000
@@ -139,12 +139,12 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 25: 8856
-Score 24: 656
+Score 25: 8866
+Score 24: 649
 Score 23: 313
 Score 22: 125
-Score 21: 36
-Score 20: 10
+Score 21: 34
+Score 20: 9
 Score 19: 4
 Score 18: 0
 Score 17: 0
@@ -203,20 +203,20 @@ Variant: No Variant
 Players: 3
 
 Number of Games: 10000
-Number of Best Score: 9165
+Number of Best Score: 9172
 Number of Losses: 0
 
 All Games
-Average Score: 24.85350
+Average Score: 24.85540
 Median Score: 25.00000
-Standard Deviation: 0.56380
-Standard Error: 0.00564
+Standard Deviation: 0.56011
+Standard Error: 0.00560
 
 Non-Loss Games
-Average Score: 24.85350
+Average Score: 24.85540
 Median Score: 25.00000
-Standard Deviation: 0.56380
-Standard Error: 0.00564
+Standard Deviation: 0.56011
+Standard Error: 0.00560
 
 Loss Games
 Average Score: 0.00000
@@ -225,13 +225,13 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 25: 9165
-Score 24: 425
-Score 23: 258
-Score 22: 113
-Score 21: 24
-Score 20: 4
-Score 19: 8
+Score 25: 9172
+Score 24: 430
+Score 23: 247
+Score 22: 110
+Score 21: 25
+Score 20: 7
+Score 19: 6
 Score 18: 3
 Score 17: 0
 Score 16: 0
@@ -289,20 +289,20 @@ Variant: No Variant
 Players: 2
 
 Number of Games: 10000
-Number of Best Score: 7886
+Number of Best Score: 7885
 Number of Losses: 0
 
 All Games
-Average Score: 24.55840
+Average Score: 24.56190
 Median Score: 25.00000
-Standard Deviation: 1.02142
-Standard Error: 0.01021
+Standard Deviation: 1.01364
+Standard Error: 0.01014
 
 Non-Loss Games
-Average Score: 24.55840
+Average Score: 24.56190
 Median Score: 25.00000
-Standard Deviation: 1.02142
-Standard Error: 0.01021
+Standard Deviation: 1.01364
+Standard Error: 0.01014
 
 Loss Games
 Average Score: 0.00000
@@ -311,12 +311,12 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 25: 7886
-Score 24: 822
-Score 23: 684
-Score 22: 377
-Score 21: 123
-Score 20: 67
+Score 25: 7885
+Score 24: 834
+Score 23: 687
+Score 22: 369
+Score 21: 122
+Score 20: 62
 Score 19: 29
 Score 18: 5
 Score 17: 4
@@ -375,20 +375,20 @@ Variant: Black Suit
 Players: 4
 
 Number of Games: 10000
-Number of Best Score: 8314
+Number of Best Score: 8317
 Number of Losses: 0
 
 All Games
-Average Score: 29.67810
+Average Score: 29.67880
 Median Score: 30.00000
-Standard Deviation: 0.84874
-Standard Error: 0.00849
+Standard Deviation: 0.84540
+Standard Error: 0.00845
 
 Non-Loss Games
-Average Score: 29.67810
+Average Score: 29.67880
 Median Score: 30.00000
-Standard Deviation: 0.84874
-Standard Error: 0.00849
+Standard Deviation: 0.84540
+Standard Error: 0.00845
 
 Loss Games
 Average Score: 0.00000
@@ -397,14 +397,14 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8314
-Score 29: 783
-Score 28: 498
-Score 27: 265
+Score 30: 8317
+Score 29: 774
+Score 28: 508
+Score 27: 263
 Score 26: 84
-Score 25: 34
+Score 25: 33
 Score 24: 16
-Score 23: 5
+Score 23: 4
 Score 22: 1
 Score 21: 0
 Score 20: 0
@@ -471,20 +471,20 @@ Variant: Black Suit
 Players: 5
 
 Number of Games: 10000
-Number of Best Score: 8675
+Number of Best Score: 8679
 Number of Losses: 0
 
 All Games
-Average Score: 29.77060
+Average Score: 29.77110
 Median Score: 30.00000
-Standard Deviation: 0.69081
-Standard Error: 0.00691
+Standard Deviation: 0.68801
+Standard Error: 0.00688
 
 Non-Loss Games
-Average Score: 29.77060
+Average Score: 29.77110
 Median Score: 30.00000
-Standard Deviation: 0.69081
-Standard Error: 0.00691
+Standard Deviation: 0.68801
+Standard Error: 0.00688
 
 Loss Games
 Average Score: 0.00000
@@ -493,13 +493,13 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8675
-Score 29: 710
-Score 28: 371
-Score 27: 181
-Score 26: 33
-Score 25: 18
-Score 24: 7
+Score 30: 8679
+Score 29: 700
+Score 28: 379
+Score 27: 180
+Score 26: 35
+Score 25: 16
+Score 24: 6
 Score 23: 5
 Score 22: 0
 Score 21: 0
@@ -567,20 +567,20 @@ Variant: Black Suit
 Players: 3
 
 Number of Games: 10000
-Number of Best Score: 8712
+Number of Best Score: 8725
 Number of Losses: 0
 
 All Games
-Average Score: 29.74560
+Average Score: 29.74980
 Median Score: 30.00000
-Standard Deviation: 0.78022
-Standard Error: 0.00780
+Standard Deviation: 0.77036
+Standard Error: 0.00770
 
 Non-Loss Games
-Average Score: 29.74560
+Average Score: 29.74980
 Median Score: 30.00000
-Standard Deviation: 0.78022
-Standard Error: 0.00780
+Standard Deviation: 0.77036
+Standard Error: 0.00770
 
 Loss Games
 Average Score: 0.00000
@@ -589,13 +589,13 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8712
-Score 29: 537
+Score 30: 8725
+Score 29: 533
 Score 28: 445
-Score 27: 192
-Score 26: 63
+Score 27: 190
+Score 26: 58
 Score 25: 29
-Score 24: 13
+Score 24: 11
 Score 23: 7
 Score 22: 1
 Score 21: 1
@@ -663,20 +663,20 @@ Variant: Black Suit
 Players: 2
 
 Number of Games: 10000
-Number of Best Score: 6973
+Number of Best Score: 6989
 Number of Losses: 0
 
 All Games
-Average Score: 29.28460
+Average Score: 29.29100
 Median Score: 30.00000
-Standard Deviation: 1.35499
-Standard Error: 0.01355
+Standard Deviation: 1.34547
+Standard Error: 0.01345
 
 Non-Loss Games
-Average Score: 29.28460
+Average Score: 29.29100
 Median Score: 30.00000
-Standard Deviation: 1.35499
-Standard Error: 0.01355
+Standard Deviation: 1.34547
+Standard Error: 0.01345
 
 Loss Games
 Average Score: 0.00000
@@ -685,15 +685,15 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 6973
+Score 30: 6989
 Score 29: 1017
-Score 28: 942
-Score 27: 516
-Score 26: 280
-Score 25: 141
-Score 24: 74
-Score 23: 33
-Score 22: 13
+Score 28: 932
+Score 27: 517
+Score 26: 282
+Score 25: 138
+Score 24: 69
+Score 23: 35
+Score 22: 10
 Score 21: 9
 Score 20: 2
 Score 19: 0
@@ -759,20 +759,20 @@ Variant: Rainbow
 Players: 4
 
 Number of Games: 10000
-Number of Best Score: 8259
+Number of Best Score: 8281
 Number of Losses: 0
 
 All Games
-Average Score: 29.66770
+Average Score: 29.67400
 Median Score: 30.00000
-Standard Deviation: 0.86588
-Standard Error: 0.00866
+Standard Deviation: 0.85697
+Standard Error: 0.00857
 
 Non-Loss Games
-Average Score: 29.66770
+Average Score: 29.67400
 Median Score: 30.00000
-Standard Deviation: 0.86588
-Standard Error: 0.00866
+Standard Deviation: 0.85697
+Standard Error: 0.00857
 
 Loss Games
 Average Score: 0.00000
@@ -781,14 +781,14 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8259
+Score 30: 8281
 Score 29: 816
-Score 28: 524
-Score 27: 242
-Score 26: 95
-Score 25: 40
-Score 24: 19
-Score 23: 2
+Score 28: 516
+Score 27: 231
+Score 26: 94
+Score 25: 39
+Score 24: 17
+Score 23: 3
 Score 22: 2
 Score 21: 1
 Score 20: 0
@@ -855,20 +855,20 @@ Variant: Rainbow
 Players: 5
 
 Number of Games: 10000
-Number of Best Score: 8633
+Number of Best Score: 8645
 Number of Losses: 0
 
 All Games
-Average Score: 29.76930
+Average Score: 29.77130
 Median Score: 30.00000
-Standard Deviation: 0.67611
-Standard Error: 0.00676
+Standard Deviation: 0.67175
+Standard Error: 0.00672
 
 Non-Loss Games
-Average Score: 29.76930
+Average Score: 29.77130
 Median Score: 30.00000
-Standard Deviation: 0.67611
-Standard Error: 0.00676
+Standard Deviation: 0.67175
+Standard Error: 0.00672
 
 Loss Games
 Average Score: 0.00000
@@ -877,14 +877,14 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8633
-Score 29: 756
-Score 28: 374
-Score 27: 172
-Score 26: 46
-Score 25: 13
-Score 24: 4
-Score 23: 2
+Score 30: 8645
+Score 29: 746
+Score 28: 376
+Score 27: 166
+Score 26: 50
+Score 25: 11
+Score 24: 6
+Score 23: 0
 Score 22: 0
 Score 21: 0
 Score 20: 0
@@ -951,20 +951,20 @@ Variant: Rainbow
 Players: 3
 
 Number of Games: 10000
-Number of Best Score: 8676
+Number of Best Score: 8685
 Number of Losses: 0
 
 All Games
-Average Score: 29.74560
+Average Score: 29.74830
 Median Score: 30.00000
-Standard Deviation: 0.76390
-Standard Error: 0.00764
+Standard Deviation: 0.75855
+Standard Error: 0.00759
 
 Non-Loss Games
-Average Score: 29.74560
+Average Score: 29.74830
 Median Score: 30.00000
-Standard Deviation: 0.76390
-Standard Error: 0.00764
+Standard Deviation: 0.75855
+Standard Error: 0.00759
 
 Loss Games
 Average Score: 0.00000
@@ -973,14 +973,14 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 8676
-Score 29: 587
-Score 28: 424
-Score 27: 204
-Score 26: 71
-Score 25: 24
-Score 24: 7
-Score 23: 6
+Score 30: 8685
+Score 29: 583
+Score 28: 428
+Score 27: 199
+Score 26: 67
+Score 25: 25
+Score 24: 5
+Score 23: 7
 Score 22: 0
 Score 21: 1
 Score 20: 0
@@ -1047,20 +1047,20 @@ Variant: Rainbow
 Players: 2
 
 Number of Games: 10000
-Number of Best Score: 7012
+Number of Best Score: 7008
 Number of Losses: 0
 
 All Games
-Average Score: 29.29760
+Average Score: 29.29930
 Median Score: 30.00000
-Standard Deviation: 1.33604
-Standard Error: 0.01336
+Standard Deviation: 1.33052
+Standard Error: 0.01331
 
 Non-Loss Games
-Average Score: 29.29760
+Average Score: 29.29930
 Median Score: 30.00000
-Standard Deviation: 1.33604
-Standard Error: 0.01336
+Standard Deviation: 1.33052
+Standard Error: 0.01331
 
 Loss Games
 Average Score: 0.00000
@@ -1069,15 +1069,15 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 7012
+Score 30: 7008
 Score 29: 1023
-Score 28: 907
-Score 27: 502
-Score 26: 287
-Score 25: 157
-Score 24: 62
-Score 23: 33
-Score 22: 10
+Score 28: 919
+Score 27: 504
+Score 26: 281
+Score 25: 153
+Score 24: 64
+Score 23: 32
+Score 22: 9
 Score 21: 6
 Score 20: 0
 Score 19: 1
@@ -1143,20 +1143,20 @@ Variant: One Of Each
 Players: 4
 
 Number of Games: 10000
-Number of Best Score: 5683
+Number of Best Score: 5684
 Number of Losses: 0
 
 All Games
-Average Score: 28.87030
+Average Score: 28.87480
 Median Score: 30.00000
-Standard Deviation: 1.64163
-Standard Error: 0.01642
+Standard Deviation: 1.63768
+Standard Error: 0.01638
 
 Non-Loss Games
-Average Score: 28.87030
+Average Score: 28.87480
 Median Score: 30.00000
-Standard Deviation: 1.64163
-Standard Error: 0.01642
+Standard Deviation: 1.63768
+Standard Error: 0.01638
 
 Loss Games
 Average Score: 0.00000
@@ -1165,17 +1165,17 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 5683
-Score 29: 1223
-Score 28: 1113
-Score 27: 913
-Score 26: 595
-Score 25: 260
-Score 24: 122
-Score 23: 50
+Score 30: 5684
+Score 29: 1226
+Score 28: 1131
+Score 27: 904
+Score 26: 591
+Score 25: 251
+Score 24: 120
+Score 23: 52
 Score 22: 26
-Score 21: 11
-Score 20: 4
+Score 21: 9
+Score 20: 6
 Score 19: 0
 Score 18: 0
 Score 17: 0
@@ -1239,20 +1239,20 @@ Variant: One Of Each
 Players: 5
 
 Number of Games: 10000
-Number of Best Score: 5433
+Number of Best Score: 5424
 Number of Losses: 0
 
 All Games
-Average Score: 28.91360
+Average Score: 28.91540
 Median Score: 30.00000
-Standard Deviation: 1.50392
-Standard Error: 0.01504
+Standard Deviation: 1.49969
+Standard Error: 0.01500
 
 Non-Loss Games
-Average Score: 28.91360
+Average Score: 28.91540
 Median Score: 30.00000
-Standard Deviation: 1.50392
-Standard Error: 0.01504
+Standard Deviation: 1.49969
+Standard Error: 0.01500
 
 Loss Games
 Average Score: 0.00000
@@ -1261,16 +1261,16 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 5433
-Score 29: 1534
-Score 28: 1189
-Score 27: 931
-Score 26: 599
-Score 25: 189
-Score 24: 79
-Score 23: 30
-Score 22: 10
-Score 21: 6
+Score 30: 5424
+Score 29: 1549
+Score 28: 1196
+Score 27: 920
+Score 26: 594
+Score 25: 196
+Score 24: 81
+Score 23: 24
+Score 22: 9
+Score 21: 7
 Score 20: 0
 Score 19: 0
 Score 18: 0
@@ -1335,20 +1335,20 @@ Variant: One Of Each
 Players: 3
 
 Number of Games: 10000
-Number of Best Score: 6367
+Number of Best Score: 6375
 Number of Losses: 0
 
 All Games
-Average Score: 29.05710
+Average Score: 29.06440
 Median Score: 30.00000
-Standard Deviation: 1.51963
-Standard Error: 0.01520
+Standard Deviation: 1.51112
+Standard Error: 0.01511
 
 Non-Loss Games
-Average Score: 29.05710
+Average Score: 29.06440
 Median Score: 30.00000
-Standard Deviation: 1.51963
-Standard Error: 0.01520
+Standard Deviation: 1.51112
+Standard Error: 0.01511
 
 Loss Games
 Average Score: 0.00000
@@ -1357,16 +1357,16 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 6367
-Score 29: 929
-Score 28: 1044
-Score 27: 805
-Score 26: 519
+Score 30: 6375
+Score 29: 939
+Score 28: 1049
+Score 27: 791
+Score 26: 517
 Score 25: 185
-Score 24: 91
-Score 23: 41
-Score 22: 12
-Score 21: 5
+Score 24: 85
+Score 23: 39
+Score 22: 14
+Score 21: 4
 Score 20: 1
 Score 19: 0
 Score 18: 1
@@ -1431,20 +1431,20 @@ Variant: One Of Each
 Players: 2
 
 Number of Games: 10000
-Number of Best Score: 4804
+Number of Best Score: 4803
 Number of Losses: 0
 
 All Games
-Average Score: 28.37790
+Average Score: 28.38400
 Median Score: 29.00000
-Standard Deviation: 2.06556
-Standard Error: 0.02066
+Standard Deviation: 2.05849
+Standard Error: 0.02058
 
 Non-Loss Games
-Average Score: 28.37790
+Average Score: 28.38400
 Median Score: 29.00000
-Standard Deviation: 2.06556
-Standard Error: 0.02066
+Standard Deviation: 2.05849
+Standard Error: 0.02058
 
 Loss Games
 Average Score: 0.00000
@@ -1453,17 +1453,17 @@ Standard Deviation: 0.00000
 Standard Error: 0.00000
 
 Non-loss Score Distribution
-Score 30: 4804
-Score 29: 1058
-Score 28: 1282
-Score 27: 1047
-Score 26: 759
+Score 30: 4803
+Score 29: 1061
+Score 28: 1304
+Score 27: 1039
+Score 26: 747
 Score 25: 464
-Score 24: 271
-Score 23: 154
-Score 22: 95
-Score 21: 38
-Score 20: 19
+Score 24: 275
+Score 23: 147
+Score 22: 96
+Score 21: 37
+Score 20: 18
 Score 19: 6
 Score 18: 0
 Score 17: 2
