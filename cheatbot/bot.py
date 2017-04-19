@@ -107,6 +107,8 @@ class Bot(bot.Bot):
                         located.remove(self.position)
                     if len(located) > 0:
                         playWeights[i] += 1
+                else:
+                    break
         maxWeight: int = max(playWeights)
         if maxWeight:
             self.play_card(playWeights.index(maxWeight))
