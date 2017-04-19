@@ -107,6 +107,8 @@ class Bot(bot.Bot):
                         located.remove(self.position)
                     if len(located) > 0:
                         playWeights[i] += 1
+                        if v == ci.value + 1:
+                            playWeights[i] += 5
                 else:
                     break
         maxWeight: int = max(playWeights)
