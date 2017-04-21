@@ -29,7 +29,7 @@ class Game:
         self.strikeCount: int = 0
         self.currentPlayer: int = -1
         self.deck: Dict[int, Card] = {}
-        self.discards: List[Card] = []
+        self.discards: List[int] = []
         self.playedCards: Dict[Color, List[Card]]
         self.playedCards = {c: [] for c in variant.pile_colors}
         self.actionLog: List[str] = []
