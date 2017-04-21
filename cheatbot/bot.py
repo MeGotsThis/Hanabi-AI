@@ -1,4 +1,4 @@
-from typing import Dict, List, NamedTuple
+from typing import Dict, List, NamedTuple, Optional
 
 from bot import bot
 from bot.card import Card
@@ -121,8 +121,6 @@ class Bot(bot.Bot):
         selfHandState: HandState = self.player_hand_state(self.position)
         canDiscard: int = selfHandState.discard + selfHandState.future
         possibleDoubleDiscards: List[int] = []
-        unlikelyDoubleDiscards: List[int] = []
-        nonBestDiscards: List[int] = []
         ci: CardInfo
         i: int
         h: int
@@ -143,32 +141,32 @@ class Bot(bot.Bot):
                 handState: HandState = self.player_hand_state(player)
                 if canDiscard > handState.discard + handState.future:
                     possibleDoubleDiscards.append(i)
-                else:
-                    unlikelyDoubleDiscards.append(i)
-            else:
-                nonBestDiscards.append(i)
 
         if possibleDoubleDiscards:
             self.discard_card(possibleDoubleDiscards[0])
-            return True
-        if nonBestDiscards:
-            indexToDiscard: int = nonBestDiscards[0]
-            ci = gameCards[self.hand[indexToDiscard]]
-            valueToDiscard: Value = ci.value
-            for i in nonBestDiscards[1:0]:
-                ci = gameCards[self.hand[i]]
-                if ci.value > valueToDiscard:
-                    indexToDiscard = i
-                    valueToDiscard = ci.value
-            self.discard_card(indexToDiscard)
-            return True
-        if unlikelyDoubleDiscards:
-            self.discard_card(unlikelyDoubleDiscards[0])
             return True
 
         return False
 
     def force_discard(self) -> bool:
+        scores: Dict[Color, int] = {c: len(self.game.playedCards[c])
+                                    for c in self.game.variant.pile_colors}
+        gapIndex: Optional[int] = None
+        biggestGap: int = 0
+        for i, h in enumerate(self.hand[1:], 1):
+            ci = gameCards[h]
+            if ci.value == Value.V5:
+                continue
+            if self.card_is_critical(ci.color, ci.value):
+                continue
+            gap: int = ci.value.value - scores[ci.color]
+            if gap > 0 and gap > biggestGap:
+                biggestGap = gap
+                gapIndex = i
+        if gapIndex is not None:
+            self.discard_card(gapIndex)
+            return True
+
         indexToDiscard: int = 0
         valueToDiscard: Value = gameCards[self.hand[indexToDiscard]].value
 
