@@ -1,6 +1,6 @@
 # Hanabi
 
-Hanabi is a cooperative card team game in which you can everyone's hands but not your own. You can read more about the rules [here](http://pastebin.com/6brGz2J4) provided by [ExtraTricky](https://www.twitch.tv/extratricky)
+Hanabi is a cooperative card team game in which you can see everyone's hands but not your own. You can read more about the rules [here](http://pastebin.com/6brGz2J4) provided by [ExtraTricky](https://www.twitch.tv/extratricky)
 
 # Keldon
 
