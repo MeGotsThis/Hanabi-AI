@@ -112,7 +112,7 @@ class MasterBot(threading.Thread):
 
     def run(self) -> None:
         print(self.username + ': Loading Bot AI')
-        print(self.username + ': Loaded ' + self.botCls.BOT_NAME)  # type: ignore
+        print(self.username + ': Loaded ' + self.botCls.BOT_NAME)
 
         self.conn = socketIO_client.SocketIO('keldon.net', 32221)
         self.conn.on('message', self.on_message)
@@ -234,7 +234,7 @@ class SlaveBot(threading.Thread):
 
     def run(self) -> None:
         print(self.username + ': Loading Bot AI')
-        print(self.username + ': Loaded ' + self.botCls.BOT_NAME)  # type: ignore
+        print(self.username + ': Loaded ' + self.botCls.BOT_NAME)
 
         self.conn = socketIO_client.SocketIO('keldon.net', 32221)
         self.conn.on('message', self.on_message)

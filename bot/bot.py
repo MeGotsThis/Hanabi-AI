@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from abc import abstractmethod
 
@@ -10,7 +10,7 @@ from .player import Player
 
 
 class Bot(Player):
-    BOT_NAME: str = 'Base Bot'
+    BOT_NAME: ClassVar[str] = 'Base Bot'
 
     def __init__(self,
                  gameObj: 'game.Game',

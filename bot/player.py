@@ -8,7 +8,7 @@ class Player:
         self.game: game.Game = gameObj
         self.position: int = position
         self.hand: List[int] = []
-        self.name: int = name
+        self.name: str = name
 
     def drew_card(self, deckIdx: int) -> None:
         self.hand.append(deckIdx)

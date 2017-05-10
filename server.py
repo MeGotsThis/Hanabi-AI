@@ -28,7 +28,7 @@ class ServerGame:
                  print_verbose: Any=False,
                  null_clues: Any=False,
                  seed: Any=None, **kwargs) -> None:
-        if variant not in Variant:  # type: ignore
+        if variant not in Variant:
             raise ValueError('variant')
         if players < 2 or players > 5:
             raise ValueError('players')
@@ -82,7 +82,7 @@ class ServerGame:
         s: Suit
         for s in self.variant.pile_suits:
             possible: int = 5
-            copies: Dict[Rank, int] = {r: 0 for r in Rank}  # type: ignore
+            copies: Dict[Rank, int] = {r: 0 for r in Rank}
             d: int
             for d in self.discards[s]:
                 card: ServerCard = self.deck[d]
@@ -222,7 +222,7 @@ class ServerGame:
         r: Rank
         i: int
         for s in self.variant.pile_suits:
-            for r in Rank:  # type: ignore
+            for r in Rank:
                 if not (s == Suit.Extra and self.variant == Variant.OneOfEach):
                     for i in range(r.num_copies):
                         self.deck.append(ServerCard(index, s, r, self.variant))

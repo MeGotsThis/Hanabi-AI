@@ -121,7 +121,7 @@ def run(username: str, password: str, botIni: str='bot.init') -> None:
     print('Loading Bot AI')
     botModule = importlib.import_module(botconfig['BOT']['bot'] + '.bot')
     botCls = botModule.Bot  # type: ignore
-    print('Loaded ' + botCls.BOT_NAME)  # type: ignore
+    print('Loaded ' + botCls.BOT_NAME)
 
     conn = socketIO_client.SocketIO('keldon.net', 32221)
     conn.on('message', on_message)
@@ -165,10 +165,10 @@ def run(username: str, password: str, botIni: str='bot.init') -> None:
                     max_players = int_input('Max Players (2 - 5) --> ',
                                             min=2, max=5)
                     print('Variant')
-                    for variant in Variant:  # type: ignore
+                    for variant in Variant:
                         print('({}) {}'.format(variant.value,
                                                variant.full_name))
-                    variant = int_input(min=0, max=len(Variant) - 1)  # type: ignore
+                    variant = int_input(min=0, max=len(Variant) - 1)
                     print('Allow Spectators? (y or 1 for yes)')
                     allow_spec: bool = input('--> ') in ['1', 'y', 'Y']
                     d = {'type': 'create_table',
