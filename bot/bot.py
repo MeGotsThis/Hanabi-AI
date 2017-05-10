@@ -64,6 +64,15 @@ class Bot(Player):
                         player: int,
                         deckIdx: int,
                         position: int) -> None: ...
+    def someone_did_played(self,
+                           player: int,
+                           deckIdx: int,
+                           position: int,
+                           striked: bool) -> None: ...
+    def someone_did_discard(self,
+                            player: int,
+                            deckIdx: int,
+                            position: int) -> None: ...
     def someone_got_color(self,
                           from_: int,
                           to: int,
@@ -94,6 +103,13 @@ class Bot(Player):
     '''
     def card_played(self, deckIdx: int, position: int) -> None: ...
     def card_discarded(self, deckIdx: int, position: int) -> None: ...
+    def card_did_played(self,
+                        deckIdx: int,
+                        position: int,
+                        striked: bool) -> None: ...
+    def card_did_discarded(self,
+                           deckIdx: int,
+                           position: int) -> None: ...
     def card_revealed(self, deckIdx: int) -> None: ...
 
     '''

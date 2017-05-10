@@ -1,9 +1,15 @@
+from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Type
 
 from bot import bot
 from bot.card import Card
 from bot.player import Player
 from enums import Clue, Color, Suit, Rank, Value, Variant
+
+
+class Action(Enum):
+    Play = auto()
+    Discard = auto()
 
 
 class Game:
@@ -33,6 +39,10 @@ class Game:
         self.playedCards: Dict[Color, List[Card]]
         self.playedCards = {c: [] for c in variant.pile_colors}
         self.actionLog: List[str] = []
+        self._lastAction: Optional[Action] = None
+        self._cardMoved: Optional[int] = None
+        self._cardPosition: Optional[int] = None
+        self._striked: bool = False
 
     def send(self, type: str, resp: Dict[str, Any]) -> None:
         self.connection.emit('message', {'type': type, 'resp': resp})
@@ -131,12 +141,17 @@ class Game:
         card.rank = value
 
     def card_played(self, deckidx: int, suit: int, rank: int) -> None:
+        player: Player = self.players[self.currentPlayer]
+        pos: int = player.hand.index(deckidx)
+
+        self._lastAction = Action.Play
+        self._cardMoved = deckidx
+        self._cardPosition = pos
+
         self._card_shown(deckidx, suit, rank)
         color = Suit(suit).color(self.variant)
         self.playedCards[color].append(self.deck[deckidx])
 
-        player: Player = self.players[self.currentPlayer]
-        pos: int = player.hand.index(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_played(deckidx, pos)
         else:
@@ -144,11 +159,16 @@ class Game:
         player.played_card(deckidx)
 
     def card_discarded(self, deckidx: int, suit: int, rank: int) -> None:
+        player: Player = self.players[self.currentPlayer]
+        pos: int = player.hand.index(deckidx)
+
+        self._lastAction = Action.Discard
+        self._cardMoved = deckidx
+        self._cardPosition = pos
+
         self._card_shown(deckidx, suit, rank)
         self.discards.append(deckidx)
 
-        player: Player = self.players[self.currentPlayer]
-        pos: int = player.hand.index(deckidx)
         if self.currentPlayer == self.botPosition:
             self.bot.card_discarded(deckidx, pos)
         else:
@@ -204,13 +224,36 @@ class Game:
         self.scoreCount = score
 
     def striked(self, strikes: int) -> None:
+        self._striked = True
         self.strikeCount = strikes
         self.bot.striked(self.currentPlayer)
 
     def change_turn(self, player: int, turn_count: int) -> None:
+        if (self._lastAction == Action.Play
+                or (self._lastAction == Action.Discard and self._striked)):
+            if self.currentPlayer == self.botPosition:
+                self.bot.card_did_played(
+                    self._cardMoved, self._cardPosition, self._striked)
+            else:
+                self.bot.someone_did_played(
+                    self.currentPlayer, self._cardMoved, self._cardPosition,
+                    self._striked)
+        elif self._lastAction == Action.Discard:
+            if self.currentPlayer == self.botPosition:
+                self.bot.card_did_discarded(
+                    self._cardMoved, self._cardPosition)
+            else:
+                self.bot.someone_did_discard(
+                    self.currentPlayer, self._cardMoved, self._cardPosition)
+
         self.currentPlayer = player
         self.turnCount = turn_count
         self.bot.next_turn(player)
+
+        self._lastAction = None
+        self._cardMoved = None
+        self._cardPosition = None
+        self._striked = False
 
     def game_ended(self) -> None:
         self.bot.game_ended()
