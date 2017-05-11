@@ -44,9 +44,7 @@ clueFutureWeight = {
 
 class Bot(bot.Bot):
     '''
-    Multi-tag Bot
-
-    Changes from v2.1
+    Dev Bot
     '''
     BOT_NAME = 'Dev Bot'
 
