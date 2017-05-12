@@ -1,12 +1,9 @@
-from typing import Dict, List, NamedTuple, Optional
+from typing import ClassVar, Dict, List, NamedTuple, Optional
 
 from bot import bot
 from bot.card import Card
 from bot.player import Player
 from enums import Color, Value, Variant
-
-gameCards: Dict[int, 'CardInfo'] = {}
-clueTempo: List[int] = [0, 1, 2, 3, 4, 5, 8, 30, 30]
 
 
 class CardInfo(NamedTuple):
@@ -21,15 +18,20 @@ class HandState(NamedTuple):
     discard: int
 
 
+gameCards: Dict[int, 'CardInfo'] = {}
+clueTempo: List[int] = [0, 1, 2, 3, 4, 5, 8, 30, 30]
+
+
 class Bot(bot.Bot):
     '''
     Cheat Bot
     '''
-    BOT_NAME = 'Cheat Bot'
+    BOT_NAME: ClassVar[str] = 'Cheat Bot'
 
     def update_game_state(self) -> None:
         c: Color
-        v: Color
+        v: Value
+        discards: Dict[Color, List[int]]
         discards = {c: [0] * 6 for c in self.game.variant.pile_colors}
         d: int
         for d in self.game.discards:
@@ -38,18 +40,19 @@ class Bot(bot.Bot):
         self.nextCardPlay: Dict[Color, int]
         self.nextCardPlay = {c: len(self.game.playedCards[c]) + 1
                              for c in self.game.variant.pile_colors}
-        self.maxCardPlay: Dict[Color, int]
+        self.maxCardPlay: Dict[Color, Value]
         self.maxCardPlay = {c: Value.V5 for c in self.game.variant.pile_colors}
         for c in self.game.variant.pile_colors:
-            for v in reversed(Value):
+            for v in reversed(Value):  # type: ignore
                 if discards[c][v] < v.num_copies:
                     self.maxCardPlay[c] = v
                     break
 
     def decide_move(self, can_clue: bool, can_discard: bool) -> None:
+        next: int
         self.update_game_state()
         if can_discard and not can_clue:
-            next: int = (self.position + 1) % self.game.numPlayers
+            next = (self.position + 1) % self.game.numPlayers
             hs: HandState = self.player_hand_state(next)
             if hs.playable == 0 and hs.discard == 0 and hs.future == 0:
                 if self.discard_a_card():
@@ -58,14 +61,14 @@ class Bot(bot.Bot):
         if self.play_a_card(can_discard):
             return
 
-        maxScore: int = len(self.game.variant.pile_colors) * len(Value)
+        maxScore: int = len(self.game.variant.pile_colors) * len(Value)  # type: ignore
         moreToPlay: int = maxScore - self.game.scoreCount
         shouldClue: bool = (moreToPlay <= clueTempo[self.game.clueCount]
                             or moreToPlay >= self.game.deckCount + 1)
 
         if shouldClue:
             if can_clue:
-                next: int = (self.position + 1) % self.game.numPlayers
+                next = (self.position + 1) % self.game.numPlayers
                 ci = gameCards[self.game.players[next].hand[0]]
                 self.give_value_clue(next, ci.value)
                 return
@@ -75,7 +78,7 @@ class Bot(bot.Bot):
             if can_discard and self.discard_a_card():
                 return
             if can_clue and not shouldClue:
-                next: int = (self.position + 1) % self.game.numPlayers
+                next = (self.position + 1) % self.game.numPlayers
                 ci = gameCards[self.game.players[next].hand[0]]
                 self.give_value_clue(next, ci.value)
                 return
@@ -89,6 +92,7 @@ class Bot(bot.Bot):
         ci: CardInfo
         i: int
         h: int
+        v: Value
         playWeights: List[int] = [0] * len(self.hand)
         for i, h in enumerate(self.hand):
             ci = gameCards[h]
@@ -97,7 +101,7 @@ class Bot(bot.Bot):
             if not can_discard and ci.value == Value.V5:
                 continue
             playWeights[i] += 1
-            for v in Value:
+            for v in Value:  # type: ignore
                 if v <= ci.value:
                     continue
                 located = self.who_has(ci.color, v)
@@ -149,6 +153,9 @@ class Bot(bot.Bot):
         return False
 
     def force_discard(self) -> bool:
+        ci: CardInfo
+        i: int
+        h: int
         scores: Dict[Color, int] = {c: len(self.game.playedCards[c])
                                     for c in self.game.variant.pile_colors}
         gapIndex: Optional[int] = None
@@ -170,9 +177,6 @@ class Bot(bot.Bot):
         indexToDiscard: int = 0
         valueToDiscard: Value = gameCards[self.hand[indexToDiscard]].value
 
-        ci: CardInfo
-        i: int
-        h: int
         for i, h in enumerate(self.hand[1:], 1):
             ci = gameCards[h]
             if ci.value > valueToDiscard:
