@@ -52,6 +52,9 @@ Used with /main.py and /save_game.py. Used to tell what user to log into Keldon.
 ### simulator.ini
 Used with /simulator.py. Used to tell what bot to run and how many game simulations to run.
 
+### multiple.ini
+Used with /multiple.py. Used to tell what bots to run on Keldon.
+
 ## Running
 ### /main.py
 The main executable to run on http://keldon.net/hanabi/. Can be used to create, join, rejoin games.
@@ -64,3 +67,6 @@ Create a test suite from a game saved from /save_game.py. This is saved to game_
 
 ### /simulator.py
 Runs simulations of games as many as one wants. Good to run thousand games without the need of network latency or use keldon resources.
+
+### /multiple.py
+Runs on http://keldon.net/hanabi/ multiple bots in one game. The first bot will create the game and can wait for humans.
