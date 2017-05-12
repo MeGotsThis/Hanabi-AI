@@ -1,5 +1,6 @@
 *.pyc
 .idea
+.mypy_cache
 *.ini
 !*.dist.ini
 game_test.py
