@@ -23,7 +23,7 @@ class Bot(Player):
     '''
     Some helper methods to create some objects
     '''
-    def create_player(self, position: int, name: str):
+    def create_player(self, position: int, name: str) -> Player:
         if position == self.position:
             return self
         return Player(self.game, position, name)
@@ -32,10 +32,10 @@ class Bot(Player):
                            player: int,
                            deckPosition: int,
                            color: Optional[Color],
-                           value: Optional[Value]):
+                           value: Optional[Value]) -> Card:
         return Card(self.game, player, deckPosition, color, value)
 
-    def create_own_card(self, deckPosition):
+    def create_own_card(self, deckPosition) -> Card:
         return self.create_player_card(self.position, deckPosition, None, None)
 
     '''
@@ -48,9 +48,9 @@ class Bot(Player):
     '''
     This will be called for all players
     '''
-    def next_turn(self, player: int): ...
-    def striked(self, player: int): ...
-    def game_ended(self): ...
+    def next_turn(self, player: int) -> None: ...
+    def striked(self, player: int) -> None: ...
+    def game_ended(self) -> None: ...
 
     '''
     These will be called for all players except the bot
@@ -77,12 +77,12 @@ class Bot(Player):
                           from_: int,
                           to: int,
                           color: Color,
-                          positions: List[int]): ...
+                          positions: List[int]) -> None: ...
     def someone_got_value(self,
                           from_: int,
                           to: int,
                           value: Value,
-                          positions: List[int]): ...
+                          positions: List[int]) -> None: ...
 
     '''
     These will be called for only the bot
