@@ -1,8 +1,10 @@
 import time
 
+import game
+
 from enum import Enum, auto
 from itertools import chain
-from typing import ClassVar
+from typing import ClassVar, Dict, List
 
 from bot import bot
 from enums import Color, Value, Variant
@@ -12,15 +14,19 @@ from .hint import Hint
 
 
 class GameStage(Enum):
+    '''State of the game'''
     Early = auto()
     Mid = auto()
     End = auto()
 
 
 class HandState(Enum):
+    '''State of the card in someone's hand'''
     Unclued = auto()
     Critical = auto()
+    '''Critical card that is very valuable'''
     Critical2 = auto()
+    '''Value 2 card that is on chop'''
     SoonPlay = auto()
     Playable = auto()
     Worthless = auto()
@@ -34,6 +40,7 @@ cluePlayWeight = {
     Value.V4: 1,
     Value.V5: 0,
     }
+'''Weight of the values of clues that on cards that are now playable'''
 clueFutureWeight = {
     Value.V1: 0,
     Value.V2: 2,
@@ -41,7 +48,7 @@ clueFutureWeight = {
     Value.V4: 0,
     Value.V5: 0,
     }
-
+'''Weight of the values of clues that can infer cards in the future'''
 
 class Bot(bot.Bot):
     '''
@@ -49,49 +56,59 @@ class Bot(bot.Bot):
     '''
     BOT_NAME: ClassVar[str] = 'Dev Bot'
 
-    def __init__(self, game, position, name, wait=0, **kwargs):
-        if game.variant != Variant.NoVariant:
+    waitTime: int
+    '''Time to sleep before making a move, helps keldon UI to load properly for
+    humans'''
+    colors: List[Color]
+    '''Valid colors for the game mode'''
+    values: List[Value]
+    '''Valid values for the game mode'''
+    nextPlayValue: Dict[Color, int]
+    '''Next playable value for the color pile'''
+    maxPlayValue: Dict[Color, int]
+    '''Maximum playable value for the color pile'''
+    colorComplete: Dict[Color, bool]
+    '''True if the color pile is completed (implies the pile has no more
+     playable cards)'''
+    playedCount: Dict[Color, List[int]]
+    '''Count cards have been played/discarded
+    First index is the color, second index is the value, value is a count'''
+    discardCount: Dict[Color, List[int]]
+    '''Count cards have been discarded
+    First index is the color, second index is the value, value is a count'''
+    locatedCount: Dict[Color, List[int]]
+    '''Count cards in players' hands are definitely identified
+    First index is the color, second index is the value, value is a count'''
+    eyesightCount: Dict[Color, List[int]]
+    '''Count cards in players' hands are visible to me in particular
+    First index is the color, second index is the value, value is a count'''
+    lowestPlayableValue: int
+    '''Lowest-value card currently playable'''
+    clueLog: List[List[ClueState]]
+    '''Logs all the clues given to players from players
+    Index is the from player'''
+
+    def __init__(self,
+                 gameObj: 'game.Game',
+                 position: int,
+                 name: str, *,
+                 wait: int=0, **kwargs) -> None:
+        if gameObj.variant != Variant.NoVariant:
             raise ValueError()
 
-        super().__init__(game, position, name, **kwargs)
+        super().__init__(gameObj, position, name, **kwargs)
         self.waitTime = int(wait)
-        self.colors = list(game.variant.pile_colors)
-        self.values = list(Value)
+        self.colors = list(gameObj.variant.pile_colors)
+        self.values = list(Value)  # type: ignore
 
-        '''
-        Next value for the color
-        '''
-        self.nextPlayValue = {c: 0 * 6 for c in self.colors}
-        '''
-        Max possible value for the color
-        '''
-        self.maxPlayValue = {c: 0 * 6 for c in self.colors}
-        '''
-        Pile Complete
-        '''
-        self.colorComplete = {c: False * 6 for c in self.colors}
-        '''
-        What cards have been played/discarded so far?
-        '''
-        self.playedCount = {c: [0] * 6 for c in self.colors}
-        '''
-        What cards have been discarded so far?
-        '''
-        self.discardCount = {c: [0] * 6 for c in self.colors}
-        '''
-        What cards in players' hands are definitely identified?
-        This table is recomputed every turn.
-        '''
-        self.locatedCount = {c: [0] * 6 for c in self.colors}
-        '''
-        What cards in players' hands are visible to me in particular?
-        This table is recomputed every turn.
-        '''
-        self.eyesightCount = {c: [0] * 6 for c in self.colors}
-        '''
-        What is the lowest-value card currently playable?
-        This value is recomputed every turn.
-        '''
+        numListValues: int = int(max(self.values) + 1)
+        self.nextPlayValue = {c: 0 * numListValues for c in self.colors}
+        self.maxPlayValue = {c: 0 * numListValues for c in self.colors}
+        self.colorComplete = {c: False for c in self.colors}
+        self.playedCount = {c: [0] * numListValues for c in self.colors}
+        self.discardCount = {c: [0] * numListValues for c in self.colors}
+        self.locatedCount = {c: [0] * numListValues for c in self.colors}
+        self.eyesightCount = {c: [0] * numListValues for c in self.colors}
         self.lowestPlayableValue = 0
         self.clueLog = [[] for p in range(self.game.numPlayers)]
 
