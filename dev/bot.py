@@ -2,6 +2,7 @@ import time
 
 from enum import Enum, auto
 from itertools import chain
+from typing import ClassVar
 
 from bot import bot
 from enums import Color, Value, Variant
@@ -46,7 +47,7 @@ class Bot(bot.Bot):
     '''
     Dev Bot
     '''
-    BOT_NAME = 'Dev Bot'
+    BOT_NAME: ClassVar[str] = 'Dev Bot'
 
     def __init__(self, game, position, name, wait=0, **kwargs):
         if game.variant != Variant.NoVariant:
