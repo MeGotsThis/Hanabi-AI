@@ -1,13 +1,23 @@
+from typing import Optional
+
+from enums import Color, Value
+
+
 class Hint:
-    def __init__(self, *, fitness=0, to=None, color=None, value=None):
-        self.fitness = fitness
-        self.to = to
-        self.color = color
-        self.value = value
+    def __init__(self, *,
+                 fitness: int=0,
+                 to: int=-1,
+                 color: Optional[Color]=None,
+                 value: Optional[Value]=None):
+        self.fitness: int = fitness
+        self.to: int = to
+        self.color: Optional[Color] = color
+        self.value: Optional[Value] = value
 
     def give(self, bot):
-        assert self.to is not None
+        assert self.to != -1
         assert self.to != bot.position
+        assert (self.color is not None) != (self.value is not None)
 
         if self.color is not None:
             bot.give_color_clue(self.to, self.color)

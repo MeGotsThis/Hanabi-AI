@@ -4,9 +4,12 @@ import game
 
 from enum import Enum, auto
 from itertools import chain
-from typing import ClassVar, Dict, List
+from typing import ClassVar, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import cast
 
 from bot import bot
+from bot.card import Card
+from bot.player import Player
 from enums import Color, Value, Variant
 from .card_knowledge import CardKnowledge, CardState
 from .clue_info import ClueState
@@ -56,7 +59,7 @@ class Bot(bot.Bot):
     '''
     BOT_NAME: ClassVar[str] = 'Dev Bot'
 
-    waitTime: int
+    waitTime: float
     '''Time to sleep before making a move, helps keldon UI to load properly for
     humans'''
     colors: List[Color]
@@ -92,12 +95,12 @@ class Bot(bot.Bot):
                  gameObj: 'game.Game',
                  position: int,
                  name: str, *,
-                 wait: int=0, **kwargs) -> None:
+                 wait: float=0, **kwargs) -> None:
         if gameObj.variant != Variant.NoVariant:
             raise ValueError()
 
         super().__init__(gameObj, position, name, **kwargs)
-        self.waitTime = int(wait)
+        self.waitTime = float(wait)
         self.colors = list(gameObj.variant.pile_colors)
         self.values = list(Value)  # type: ignore
 
@@ -112,52 +115,81 @@ class Bot(bot.Bot):
         self.lowestPlayableValue = 0
         self.clueLog = [[] for p in range(self.game.numPlayers)]
 
-    def create_player_card(self, player, deckPosition, color, value):
+    def create_player_card(self,
+                           player: int,
+                           deckPosition: int,
+                           color: Optional[Color],
+                           value: Optional[Value]) -> CardKnowledge:
         return CardKnowledge(self, player, deckPosition, color, value)
 
-    def next_turn(self, player):
+    def next_turn(self, player: int) -> None:
         self.pleaseObserveBeforeMove()
 
-    def someone_discard(self, player, deckIdx, position):
+    def someone_discard(self,
+                        player: int,
+                        deckIdx: int,
+                        position: int) -> None:
         self.pleaseObserveBeforeDiscard(player, position, deckIdx)
 
-    def card_discarded(self, deckIdx, position):
+    def card_discarded(self, deckIdx: int, position: int) -> None:
         self.pleaseObserveBeforeDiscard(self.position, position, deckIdx)
 
-    def someone_played(self, player, deckIdx, position):
+    def someone_played(self,
+                       player: int,
+                       deckIdx: int,
+                       position: int) -> None:
         self.pleaseObserveBeforePlay(player, position, deckIdx)
 
-    def card_played(self, deckIdx, position):
+    def card_played(self, deckIdx: int, position: int) -> None:
         self.pleaseObserveBeforePlay(self.position, position, deckIdx)
 
-    def someone_got_color(self, from_, to, color, positions):
+    def someone_got_color(self,
+                          from_: int,
+                          to: int,
+                          color: Color,
+                          positions: List[int]) -> None:
         self.pleaseObserveColorHint(from_, to, color, positions)
 
-    def got_color_clue(self, player, color, positions):
+    def got_color_clue(self,
+                       player: int,
+                       color: Color,
+                       positions: List[int]) -> None:
         self.pleaseObserveColorHint(player, self.position, color, positions)
 
-    def someone_got_value(self, from_, to, value, positions):
+    def someone_got_value(self,
+                          from_: int,
+                          to: int,
+                          value: Value,
+                          positions: List[int]) -> None:
         self.pleaseObserveValueHint(from_, to, value, positions)
 
-    def got_value_clue(self, player, value, positions):
+    def got_value_clue(self,
+                       player: int,
+                       value: Value,
+                       positions: List[int]) -> None:
         self.pleaseObserveValueHint(player, self.position, value, positions)
 
-    def decide_move(self, can_clue, can_discard):
+    def decide_move(self, can_clue: bool, can_discard: bool) -> None:
         if self.waitTime:
             time.sleep(self.waitTime)
         self.pleaseMakeMove(can_clue, can_discard)
 
-    def game_stage(self):
+    def game_stage(self) -> GameStage:
+        '''Determines what stage of the game it is'''
         if len(self.game.discards) == 0:
             return GameStage.Early
         if self.game.deckCount <= len(self.game.players):
             return GameStage.End
+        moreToPlay: int
         moreToPlay = sum(self.maxPlayValue.values()) - self.game.scoreCount
         if moreToPlay <= len(self.game.players):
             return GameStage.End
         return GameStage.Mid
 
-    def isNowPlayable(self, color, value):
+    def isNowPlayable(self,
+                      color: Optional[Color],
+                      value: Optional[Value]) -> bool:
+        '''Returns True the color and/or value is playable'''
         assert color is not None or value is not None
         if color is not None and value is not None:
             return self.isPlayable(color, value)
@@ -173,25 +205,30 @@ class Bot(bot.Bot):
                         and not self.locatedCount[c][value]):
                     return True
             return False
+        assert False
 
-    def isPlayable(self, color, value):
-        playableValue = len(self.game.playedCards[color]) + 1
+    def isPlayable(self, color: Color, value: Value) -> bool:
+        '''Returns True if the color and value is now playable'''
+        playableValue: int = len(self.game.playedCards[color]) + 1
         return value == playableValue
 
-    def isValuable(self, color, value):
+    def isValuable(self, color: Color, value: Value) -> bool:
+        '''Returns True if the color and value is critical'''
         if self.playedCount[color][value] != value.num_copies - 1:
             return False
         return not self.isWorthless(color, value)
 
-    def is2Valuable(self, color):
+    def is2Valuable(self, color: Color) -> bool:
+        '''Returns True if value 2 for a color is useful in the future'''
         if self.lowestPlayableValue > 2:
             return False
-        if self.isCluedSomewhere(color, 2, maybe=True):
+        if self.isCluedSomewhere(color, Value.V2, maybe=True):
             return False
         return self.eyesightCount[color][2] != Value.V2.num_copies
 
-    def isWorthless(self, color, value):
-        playableValue = len(self.game.playedCards[color]) + 1
+    def isWorthless(self, color: Color, value: Value) -> bool:
+        '''Returns True if the color and value is completely useless'''
+        playableValue: int = len(self.game.playedCards[color]) + 1
         if value < playableValue:
             return True
         while(value > playableValue):
@@ -200,27 +237,34 @@ class Bot(bot.Bot):
                 return True
         return False
 
-    def isUseful(self, color, value):
+    def isUseful(self, color: Color, value: Value) -> bool:
+        '''Returns True if the color and value is useful now or later'''
         if self.isWorthless(color, value):
             return False
         playableValue = len(self.game.playedCards[color]) + 1
         return value >= playableValue
 
-    def updateEyesightCount(self):
+    def updateEyesightCount(self) -> None:
         self.eyesightCount = {c: [0] * 6 for c in self.colors}
+        p: Player
+        c: int
+        card: CardKnowledge
         for p in self.game.players:
             for c in p.hand:
-                card = self.game.deck[c]
+                card = cast(CardKnowledge, self.game.deck[c])
                 if card.suit is not None and card.rank is not None:
                     self.eyesightCount[card.suit][card.rank] += 1
                 elif card.color is not None and card.value is not None:
                     self.eyesightCount[card.color][card.value] += 1
 
-    def updateLocatedCount(self):
-        newCount = {c: [0] * 6 for c in self.colors}
+    def updateLocatedCount(self) -> bool:
+        '''Returns True if played/discarded cards has changed'''
+        newCount: Dict[Color, List[int]] = {c: [0] * 6 for c in self.colors}
+        p: Player
+        c: int
         for p in self.game.players:
             for c in p.hand:
-                card = self.game.deck[c]
+                card = cast(CardKnowledge, self.game.deck[c])
                 if card.color is not None and card.value is not None:
                     newCount[card.color][card.value] += 1
 
@@ -229,17 +273,18 @@ class Bot(bot.Bot):
             return True
         return False
 
-    def updateDiscardCount(self):
+    def updateDiscardCount(self) -> None:
         self.discardCount = {c: [0] * 6 for c in self.colors}
         for c in self.game.discards:
             card = self.game.deck[c]
             self.discardCount[card.suit][card.rank] += 1
 
-    def updateColorValueTables(self):
+    def updateColorValueTables(self) -> None:
+        c: Color
         for c in self.colors:
             self.nextPlayValue[c] = len(self.game.playedCards[c]) + 1
             self.maxPlayValue[c] = 0
-            score = len(self.game.playedCards[c])
+            score: int = len(self.game.playedCards[c])
             if score == 5:
                 self.colorComplete[c] = True
                 self.maxPlayValue[c] = 5
@@ -251,14 +296,20 @@ class Bot(bot.Bot):
                         break
                     self.maxPlayValue[c] = v
 
-    def seePublicCard(self, color, value):
+    def seePublicCard(self, color: Color, value: Value) -> None:
         self.playedCount[color][value] += 1
         assert 1 <= self.playedCount[color][value] <= value.num_copies
 
-    def handState(self, player, showCritical=True):
+    def handState(self,
+                  player: int,
+                  showCritical: bool=True) -> List[HandState]:
+        handState: List[HandState]
         handState = [HandState.Unclued] * len(self.game.players[player].hand)
+        c: int
+        h: int
+        card: CardKnowledge
         for c, h in enumerate(self.game.players[player].hand):
-            card = self.game.deck[h]
+            card = cast(CardKnowledge, self.game.deck[h])
             if card.worthless is True:
                 handState[c] = HandState.Worthless
                 continue
@@ -281,9 +332,9 @@ class Bot(bot.Bot):
                     handState[c] = HandState.Critical2
         return handState
 
-    def discardSlot(self, handState):
-        discard = None
-        worthless = None
+    def discardSlot(self, handState: List[HandState]) -> Optional[int]:
+        discard: Optional[int] = None
+        worthless: Optional[int] = None
         for c, h in enumerate(handState):
             if h in [HandState.Playable, HandState.SoonPlay, HandState.Saved]:
                 continue
@@ -294,14 +345,19 @@ class Bot(bot.Bot):
                     discard = c
         return worthless if worthless is not None else discard
 
-    def isCluedElsewhere(self, player, hand):
-        returnVal = False
-        handcard = self.game.deck[self.game.players[player].hand[hand]]
-        color = handcard.suit
-        value = handcard.rank
+    def isCluedElsewhere(self, player: int, hand: int) -> bool:
+        returnVal: bool = False
+        cardIdx: int = self.game.players[player].hand[hand]
+        handcard: CardKnowledge
+        handcard = cast(CardKnowledge, self.game.deck[cardIdx])
+        color: Color = handcard.suit
+        value: Value = handcard.rank
+        p: Player
+        c: int
+        card: CardKnowledge
         for p in self.game.players:
             for c in p.hand:
-                card = self.game.deck[c]
+                card = cast(CardKnowledge, self.game.deck[c])
                 if card.deckPosition == handcard.deckPosition:
                     continue
                 if p is self:
@@ -322,14 +378,22 @@ class Bot(bot.Bot):
                         return True
         return returnVal
 
-    def cluedCard(self, color, value, player=None, strict=False, maybe=False):
+    def cluedCard(self,
+                  color: Color,
+                  value: Value,
+                  player: Optional[int]=None,
+                  strict: bool=False,
+                  maybe: bool=False) -> Optional[int]:
+        p: Player
+        c: int
+        card: CardKnowledge
         for p in self.game.players:
             if player == p.position:
                 if strict:
                     continue
                 # When it is the player, assume fully tagged cards as clued too
                 for c in p.hand:
-                    card = self.game.deck[c]
+                    card = cast(CardKnowledge, self.game.deck[c])
                     if card.color == color and card.value == value:
                         return card.deckPosition
                     if p is self:
@@ -338,7 +402,7 @@ class Bot(bot.Bot):
                             return card.deckPosition
             elif p is self:
                 for c in p.hand:
-                    card = self.game.deck[c]
+                    card = cast(CardKnowledge, self.game.deck[c])
                     if card.color == color and card.value == value:
                         return card.deckPosition
                     if (maybe and card.maybeColor == color
@@ -346,30 +410,39 @@ class Bot(bot.Bot):
                         return card.deckPosition
             else:
                 for c in p.hand:
-                    card = self.game.deck[c]
+                    card = cast(CardKnowledge, self.game.deck[c])
                     if (card.clued
                         and card.suit == color
                         and card.rank == value):
                         return card.deckPosition
         return None
 
-    def isCluedSomewhere(self, color, value, player=None, strict=False,
-                         maybe=False):
+    def isCluedSomewhere(self,
+                         color: Color,
+                         value: Value,
+                         player: Optional[int]=None,
+                         strict: bool=False,
+                         maybe: bool=False) -> bool:
         return self.cluedCard(color, value, player, strict, maybe) is not None
 
-    def maybeFixBeforeMisplay(self):
-        if self.game.clueCount == 0:
-            assert False
+    def maybeFixBeforeMisplay(self) -> bool:
+        assert self.game.clueCount != 0
 
         # If a hand is near locked or is locked, maybe give a clue that can
         # free a hand up
         if self.game.clueCount == 1:
+            d: int
+            i: int
+            j: int
+            h: int
+            card: CardKnowledge
+            jcard: CardKnowledge
             for d in range(1, self.game.numPlayers):
-                player = (self.position + d) % self.game.numPlayers
-                hand = self.game.players[player].hand
-                fullHand = True
+                player: int = (self.position + d) % self.game.numPlayers
+                hand: List[int] = self.game.players[player].hand
+                fullHand: bool = True
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if not card.clued:
                         fullHand = False
 
@@ -377,14 +450,14 @@ class Bot(bot.Bot):
                     continue
 
                 for i, h in enumerate(hand):
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if not self.isWorthless(card.suit, card.rank):
                         continue
                     if card.worthless is not None:
                         continue
                     for j in range(i):
-                        jc = self.game.deck[h]
-                        if card.suit == jc.suit and card.rank == jc.rank:
+                        jcard = cast(CardKnowledge, self.game.deck[h])
+                        if card.suit == jcard.suit and card.rank == jcard.rank:
                             break
                     else:
                         continue
@@ -397,16 +470,18 @@ class Bot(bot.Bot):
 
         return False
 
-    def maybeEarlySaveCriticalCard(self, urgent):
-        if self.game.clueCount == 0:
-            assert False
+    def maybeEarlySaveCriticalCard(self, urgent: bool) -> bool:
+        assert self.game.clueCount != 0
 
-        selfHandState = self.handState(self.position)
+        selfHandState: List[HandState] = self.handState(self.position)
 
         if not urgent and HandState.Playable in selfHandState:
             return False
 
+        i: int
+        player: int
         if self.game.turnCount == 0:
+            bestClue: Hint
             for i in range(1, self.game.numPlayers):
                 player = (self.position + i) % self.game.numPlayers
                 bestClue = self.bestEarlyHintForPlayer(player, False)
@@ -416,23 +491,29 @@ class Bot(bot.Bot):
                     if bestClue.value == Value.V1:
                         if bestClue.fitness >= 60:
                             return False
-        was1Clued = self.game.turnCount != 0
-        hint = Hint()
-        distance = range(1, self.game.numPlayers)
+        was1Clued: bool = self.game.turnCount != 0
+        hint: Hint = Hint()
+        distance: Iterable[int] = range(1, self.game.numPlayers)
         if urgent:
             distance = range(1, 2)
+        hand: List[int]
+        discard: Optional[int]
+        v: Value
+        h: int
+        card: CardKnowledge
+        hcard: CardKnowledge
         for i in distance:
             player = (self.position + i) % self.game.numPlayers
             hand = self.game.players[player].hand
             discard = self.discardSlot(self.handState(player))
             for v in [Value.V2, Value.V5]:
-                tagged = []
-                valueMDuplicate = 0
-                valueDuplicate = 0
-                valueUseless = 0
-                numWasClued = 0
+                tagged: List[int] = []
+                valueMDuplicate: int = 0
+                valueDuplicate: int = 0
+                valueUseless: int = 0
+                numWasClued: int = 0
                 for i, h in enumerate(hand):
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.rank == v:
                         tagged.append(i)
                         if card.clued:
@@ -443,16 +524,16 @@ class Bot(bot.Bot):
                             valueDuplicate += 1
                         else:
                             for h in self.hand:
-                                hcard = self.game.deck[h]
+                                hcard = cast(CardKnowledge, self.game.deck[h])
                                 if (hcard.maybeColor == card.suit
                                         and hcard.maybeValue == card.rank):
                                     valueDuplicate += 1
                         if self.doesCardMatchHand(card.deckPosition):
                             valueMDuplicate += 1
-                taggedDiscard = discard in tagged
+                taggedDiscard: bool = discard in tagged
                 if not (urgent and taggedDiscard):
                     continue
-                saveFitness = 0
+                saveFitness: int = 0
                 if (len(tagged) > numWasClued and valueDuplicate == 0
                         and valueMDuplicate == 0 and valueUseless == 0):
                     if v == Value.V2 and not was1Clued:
@@ -471,21 +552,24 @@ class Bot(bot.Bot):
             return True
         return False
 
-    def maybeSaveCriticalCard(self, urgent):
-        if self.game.clueCount == 0:
-            assert False
+    def maybeSaveCriticalCard(self, urgent: bool) -> bool:
+        assert self.game.clueCount != 0
 
-        selfHandState = self.handState(self.position)
+        selfHandState: List[HandState] = self.handState(self.position)
 
         if not urgent and HandState.Playable in selfHandState:
             return False
 
-        distance = range(1, self.game.numPlayers)
+        distance: Iterable[int] = range(1, self.game.numPlayers)
         if urgent:
             distance = range(1, 2)
+        d: int
+        i: int
         for d in distance:
-            player = (self.position + d) % self.game.numPlayers
-            handState = self.handState(player)
+            player: int = (self.position + d) % self.game.numPlayers
+            handState: List[HandState] = self.handState(player)
+            critical: int
+            unclued: int
             if HandState.Worthless in handState:
                 continue
             if HandState.Critical in handState:
@@ -504,9 +588,11 @@ class Bot(bot.Bot):
                 critical = handState.index(HandState.Unclued)
             else:
                 continue
-            hand = self.game.players[player].hand
-            card = self.game.deck[hand[critical]]
-            valuable = self.isValuable(card.suit, card.rank)
+
+            hand: List[int] = self.game.players[player].hand
+            card: CardKnowledge
+            card = cast(CardKnowledge, self.game.deck[hand[critical]])
+            valuable: bool = self.isValuable(card.suit, card.rank)
             if not valuable and card.rank == 2 and self.is2Valuable(card.suit):
                 if (self.game.numPlayers == 2
                         or self.doesCardMatchHand(hand[critical])):
@@ -514,29 +600,32 @@ class Bot(bot.Bot):
             if valuable is False:
                 continue
 
-            valueTags = []
-            colorTags = []
+            valueTags: List[CardKnowledge] = []
+            colorTags: List[CardKnowledge] = []
 
+            h: int
             for h in hand:
-                hcard = self.game.deck[h]
+                hcard: CardKnowledge
+                hcard = cast(CardKnowledge, self.game.deck[h])
                 if hcard.suit & card.suit:
                     colorTags.append(hcard)
                 if hcard.rank == card.rank:
                     valueTags.append(hcard)
 
-            matchColors = self.matchCriticalCardValue(card.rank)
-            matchValues = self.matchCriticalCardColor(card.suit)
+            matchColors: List[Color] = self.matchCriticalCardValue(card.rank)
+            matchValues: List[Value] = self.matchCriticalCardColor(card.suit)
 
-            valueFitness = 0
-            colorFitness = 0
+            valueFitness: int = 0
+            colorFitness: int = 0
 
-            valueMDuplicate = 0
-            valueDuplicate = 0
-            valueClarify = 0
-            valueUseless = 0
-            valueNewTagged = 0
-            valueNewSaves = 0
-            valueOther = 0
+            valueMDuplicate: int = 0
+            valueDuplicate: int = 0
+            valueClarify: int = 0
+            valueUseless: int = 0
+            valueNewTagged: int = 0
+            valueNewSaves: int = 0
+            valueOther: int = 0
+            tcard: CardKnowledge
             for i, tcard in enumerate(valueTags):
                 if tcard.value is None:
                     valueNewTagged += 1
@@ -552,7 +641,7 @@ class Bot(bot.Bot):
                     valueDuplicate += 1
                 else:
                     for h in self.hand:
-                        hcard = self.game.deck[h]
+                        hcard = cast(CardKnowledge, self.game.deck[h])
                         if (hcard.maybeColor == tcard.suit
                                 and hcard.maybeValue == tcard.rank):
                             valueDuplicate += 1
@@ -578,15 +667,15 @@ class Bot(bot.Bot):
                 valueFitness -= valueMDuplicate * 20
                 valueFitness += valueClarify - len(matchColors)
 
-            colorMDuplicate = 0
-            colorDuplicate = 0
-            colorClarify = 0
-            colorUseless = 0
-            colorNewTagged = 0
-            colorNewSaves = 0
-            colorOther = 0
-            colorSave5 = 0
-            isSave5NextToDiscard = False
+            colorMDuplicate: int = 0
+            colorDuplicate: int = 0
+            colorClarify: int = 0
+            colorUseless: int = 0
+            colorNewTagged: int = 0
+            colorNewSaves: int = 0
+            colorOther: int = 0
+            colorSave5: int = 0
+            isSave5NextToDiscard: bool = False
             for i, tcard in enumerate(colorTags):
                 if tcard.color is None:
                     colorNewTagged += 1
@@ -609,7 +698,9 @@ class Bot(bot.Bot):
                 if self.doesCardMatchHand(tcard.deckPosition):
                     colorMDuplicate += 1
             if colorSave5 and critical + 1 < len(hand):
-                nextCard = self.game.deck[hand[critical + 1]]
+                nextCard: CardKnowledge
+                h = hand[critical + 1]
+                nextCard = cast(CardKnowledge, self.game.deck[h])
                 isSave5NextToDiscard = (nextCard.suit == card.suit
                                         and nextCard.rank == Value.V5)
             if colorDuplicate == 0 and colorUseless == 0 and valuable is True:
@@ -619,7 +710,7 @@ class Bot(bot.Bot):
                     colorFitness -= colorMDuplicate * 20
                     colorFitness -= len(matchValues)
 
-            hint = Hint()
+            hint: Hint = Hint()
             hint.to = player
             if valueFitness > 0 and valueFitness >= colorFitness:
                 hint.value = card.rank
@@ -631,15 +722,18 @@ class Bot(bot.Bot):
                 hint.fitness = colorFitness
             else:
                 # Find Worthless clue
-                valueWorthlessHint = None
-                colorWorthlessHint = None
-                valueWorthlessFitness = None
-                colorWorthlessFitness = None
+                valueWorthlessHint: Optional[Value] = None
+                colorWorthlessHint: Optional[Color] = None
+                valueWorthlessFitness: Optional[int] = None
+                colorWorthlessFitness: Optional[int] = None
 
+                fitness: int
+                v: Value
+                c: Color
                 for v in self.values[:self.lowestPlayableValue-1]:
                     fitness = 0
                     for h in hand:
-                        hcard = self.game.deck[h]
+                        hcard = cast(CardKnowledge, self.game.deck[h])
                         if hcard.rank == v:
                             fitness += 1
                     if fitness <= 0:
@@ -653,7 +747,7 @@ class Bot(bot.Bot):
                     if not self.colorComplete[c]:
                         continue
                     for h in hand:
-                        hcard = self.game.deck[h]
+                        hcard = cast(CardKnowledge, self.game.deck[h])
                         if hcard.suit & c:
                             fitness += 1
                     if fitness <= 0:
@@ -663,6 +757,8 @@ class Bot(bot.Bot):
                         colorWorthlessHint = c
                         colorWorthlessFitness = fitness
 
+                useValue: bool
+                useColor: bool
                 useValue = (valueWorthlessFitness is not None
                             and (colorWorthlessFitness is None
                                  or valueWorthlessFitness
@@ -701,45 +797,44 @@ class Bot(bot.Bot):
                 return True
         return False
 
-    def maybeDiscardForCriticalCard(self):
-        if self.game.clueCount == 8:
-            assert False
-
-        if self.game.clueCount != 0:
-            return False
+    def maybeDiscardForCriticalCard(self) -> bool:
+        assert 0 < self.game.clueCount < 8
 
         # Don't bother for 2 player games, the hand might end up locked
         if self.game.numPlayers < 3:
             return False
 
-        handState = self.handState(self.position)
-        discard = self.discardSlot(handState)
+        handState: List[HandState] = self.handState(self.position)
+        discard: Optional[int] = self.discardSlot(handState)
+        # If I don't have a good discard...
         if discard is None:
-            return None
+            return False
 
         # First check adjacent player
-        nextPlayer = (self.position + 1) % self.game.numPlayers
-        handStateN = self.handState(nextPlayer)
-        discardN = self.discardSlot(handStateN)
+        nextPlayer: int = (self.position + 1) % self.game.numPlayers
+        handStateN: List[HandState] = self.handState(nextPlayer)
+        discardN: Optional[int] = self.discardSlot(handStateN)
+        maybeDiscard: bool
         maybeDiscard = (HandState.Playable not in handStateN
                         and HandState.Playable not in handStateN
                         and discardN is not None)
         if maybeDiscard:
-            hand = self.game.players[nextPlayer].hand
-            cardN = self.game.deck[hand[discardN]]
+            hand: List[int] = self.game.players[nextPlayer].hand
+            cardN: CardKnowledge
+            cardN = cast(CardKnowledge, self.game.deck[hand[discardN]])
             if self.isValuable(cardN.suit, cardN.rank):
                 self.discard_card(discard)
                 return True
 
-        distance = range(2, self.game.numPlayers)
+        distance: Iterable[int] = range(2, self.game.numPlayers)
         if HandState.Playable in handState:
             distance = range(2, 3)
 
         for d in distance:
-            target = (self.position + d) % self.game.numPlayers
+            target: int = (self.position + d) % self.game.numPlayers
 
-            handStateT = self.handState(target)
-            discardT = self.discardSlot(handStateT)
+            handStateT: List[HandState] = self.handState(target)
+            discardT: Optional[int] = self.discardSlot(handStateT)
 
             if HandState.Playable in handStateN:
                 continue
@@ -748,20 +843,25 @@ class Bot(bot.Bot):
             if discardT is None:
                 continue
 
-            targetHand = self.game.players[target].hand
-            cardT = self.game.deck[targetHand[discardT]]
+            targetHand: List[int] = self.game.players[target].hand
+            cardT: CardKnowledge
+            cardT = cast(CardKnowledge, self.game.deck[targetHand[discardT]])
             if not self.isValuable(cardT.suit, cardT.rank):
                 continue
 
+            c: int
             for c in range(1, d):
-                between = (self.position + c) % self.game.numPlayers
-                handStateB = self.handState(between)
-                discardB = self.discardSlot(handStateB)
+                between: int = (self.position + c) % self.game.numPlayers
+                handStateB: List[HandState] = self.handState(between)
+                discardB: Optional[int] = self.discardSlot(handStateB)
+                needToDiscard: bool
                 needToDiscard = not (HandState.Playable in handStateB
                                      or HandState.Worthless in handStateB)
                 if needToDiscard and discardB is not None:
-                    betweenHand = self.game.players[between].hand
-                    cardB = self.game.deck[betweenHand[discardB]]
+                    betweenHand: List[int] = self.game.players[between].hand
+                    h: int = betweenHand[discardB]
+                    cardB: CardKnowledge
+                    cardB = cast(CardKnowledge, self.game.deck[h])
                     if not self.isValuable(cardB.suit, cardB.rank):
                         needToDiscard = False
                 if needToDiscard:
@@ -769,33 +869,45 @@ class Bot(bot.Bot):
                     return True
         return False
 
-    def valueOrderFromColor(self, color, taggedCards, player,
-                            otherPlayer=None, otherColor=None,
-                            otherValue=None):
+    def valueOrderFromColor(self,
+                            color: Color,
+                            taggedCards: List[int],
+                            player: int,
+                            otherPlayer: Optional[Union[int, bool]]=None,
+                            otherColor: Optional[Color]=None,
+                            otherValue: Optional[Value]=None
+                            ) -> Tuple[List[Tuple[int, Value]], int, int, int,
+                                       Optional[bool], bool]:
         assert otherColor is None or otherValue is None
         assert otherPlayer is None or (otherColor is not None or
                                        otherValue is not None)
-        tagged = taggedCards[:]
-        values = []
-        elseWhereColor = []
-        elseWhereValue = []
+        tagged: List[int] = taggedCards[:]
+        values: List[Tuple[int, Value]] = []
+        elseWhereColor: List[Color] = []
+        elseWhereValue: List[Value] = []
+        card: CardKnowledge
         if isinstance(otherPlayer, int):
             for h in self.game.players[otherPlayer].hand:
-                card = self.game.deck[h]
+                card = cast(CardKnowledge, self.game.deck[h])
                 if otherColor is not None and card.suit & otherColor:
                     elseWhereValue.append(card.rank)
                 if otherValue is not None and card.rank == otherValue:
                     elseWhereColor.append(card.suit)
-        nextToPlay = len(self.game.playedCards[color]) + 1
+        nextToPlay: int = len(self.game.playedCards[color]) + 1
+        v: Value
         for v in self.values[nextToPlay-1:self.maxPlayValue[color]]:
             if self.isCluedSomewhere(color, v, player, strict=True,
                                      maybe=True):
                 continue
             nextToPlay = v
             break
-        isNewestGood = None
-        needFix = False
-        numPlay, numWorthless, maybeDuplicate = 0, 0, 0
+        isNewestGood: Optional[bool] = None
+        needFix: bool = False
+        numPlay: int = 0
+        numWorthless: int = 0
+        maybeDuplicate: int = 0
+        i: int
+        t: int
         for v in self.values[nextToPlay-1:self.maxPlayValue[color]]:
             if not tagged:
                 break
@@ -808,7 +920,7 @@ class Bot(bot.Bot):
                 if color in elseWhereColor:
                     continue
             for i, t in enumerate(tagged[:]):
-                card = self.game.deck[t]
+                card = cast(CardKnowledge, self.game.deck[t])
                 if (card.value == v
                         or (otherPlayer is True and otherValue == card.rank)):
                     if card.rank == nextToPlay:
@@ -819,7 +931,7 @@ class Bot(bot.Bot):
                     break
             else:
                 for t in tagged[:]:
-                    card = self.game.deck[t]
+                    card = cast(CardKnowledge, self.game.deck[t])
                     if (card.value is not None
                         or (otherPlayer is True and otherValue == card.rank)):
                         continue
@@ -835,20 +947,28 @@ class Bot(bot.Bot):
             for t in tagged:
                 values.append((t, None))
                 numWorthless += 1
+        deckIdx: int
+        value: Value
         for deckIdx, value in values:
             if self.doesCardMatchHand(deckIdx):
                 maybeDuplicate += 1
         return (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
                 needFix)
 
-    def playOrderColorClue(self, player, color):
+    def playOrderColorClue(self, player: int, color: Color
+                           ) -> Tuple[List[Tuple[int, Value]], int, int, int,
+                                      Optional[bool], bool, int, int,
+                                      Optional[int], Optional[Color],
+                                      Optional[List[Value]]]:
         assert player != self.position
-        tagged = []
-        hand = self.game.players[player].hand
-        numNewTagged = 0
-        badClarify = 0
+        tagged: List[int] = []
+        hand: List[int] = self.game.players[player].hand
+        numNewTagged: int = 0
+        badClarify: int = 0
+        h: int
+        card: CardKnowledge
         for h in reversed(hand):
-            card = self.game.deck[h]
+            card = cast(CardKnowledge, self.game.deck[h])
             if not (card.suit & color):
                 continue
             tagged.append(h)
@@ -857,12 +977,27 @@ class Bot(bot.Bot):
                 if card.value is not None:
                     if card.playColorDirect or card.playable:
                         badClarify += 1
+        playOrder: List[Tuple[int, Value]]
+        numPlay: int
+        numWorthless: int
+        maybeDuplicate: int
+        isNewestGood: Optional[bool]
+        needFix: bool
         (playOrder, numPlay, numWorthless, maybeDuplicate, isNewestGood,
          needFix
          ) = self.valueOrderFromColor(color, tagged, player)
 
-        fixPlayer, fixColor, fixValue = None, None, None
+        fixPlayer: Optional[int] = None
+        fixColor: Optional[Color] = None
+        fixValue: Optional[List[Value]] = None
         if needFix:
+            playOrder_: List[Tuple[int, Value]]
+            numPlay_: int
+            numWorthless_: int
+            maybeDuplicate_: int
+            isNewestGood_: Optional[bool]
+            needFix_: bool
+            tagV: Value
             for tagV in self.values:
                 # Test Fix Clues
                 (playOrder_, numPlay_, numWorthless_, maybeDuplicate_,
@@ -878,11 +1013,12 @@ class Bot(bot.Bot):
                         fixValue = []
                     fixValue.append(tagV)
 
+            p: int
             for p in range(self.game.numPlayers):
                 if p == player or p == self.position:
                     continue
-                (playOrder_, numPlay_, numWorthless_, isNewestGood_,
-                 maybeDuplicate_, needFix_
+                (playOrder_, numPlay_, numWorthless_, maybeDuplicate_,
+                 isNewestGood_, needFix_
                  ) = self.valueOrderFromColor(color, tagged, player,
                                               otherPlayer=p,
                                               otherValue=tagV)
@@ -898,32 +1034,39 @@ class Bot(bot.Bot):
                 needFix, numNewTagged, badClarify,
                 fixPlayer, fixColor, fixValue)
 
-    def playOrderValueClue(self, player, value):
+    def playOrderValueClue(self, player: int, value: Value
+                           ) -> Tuple[List[Tuple[int, Set[Color]]], int, int,
+                                      int, int, int, int, int, int]:
         assert player != self.position
-        numNewTagged = 0
-        tagged = []
-        hand = self.game.players[player].hand
+        numNewTagged: int = 0
+        tagged: List[int] = []
+        hand: List[int] = self.game.players[player].hand
+        h: int
+        card: CardKnowledge
         for h in reversed(hand):
-            card = self.game.deck[h]
+            card = cast(CardKnowledge, self.game.deck[h])
             if card.rank == value:
                 if card.value is None:
                     numNewTagged += 1
                 tagged.append(h)
-        playColors = []
-        futureColors = []
+        playColors: List[Color] = []
+        futureColors: List[Color] = []
+        c: Color
         for c in self.colors:
             if self.colorComplete[c]:
                 continue
+            deckIdx: Optional[int]
             if self.isCluedSomewhere(c, value, self.position, maybe=True):
                 deckIdx = self.cluedCard(c, value, self.position, maybe=True)
-                card = self.game.deck[deckIdx]
+                card = cast(CardKnowledge, self.game.deck[deckIdx])
                 if deckIdx not in tagged or not card.cluedAsDiscard:
                     continue
-            scoreTagged = len(self.game.playedCards[c])
+            scoreTagged: int = len(self.game.playedCards[c])
+            v: Value
             for v in self.values[scoreTagged:self.maxPlayValue[c]]:
                 if self.isCluedSomewhere(c, v, self.position, maybe=True):
                     deckIdx = self.cluedCard(c, v, self.position, maybe=True)
-                    card = self.game.deck[deckIdx]
+                    card = cast(CardKnowledge, self.game.deck[deckIdx])
                     if deckIdx in tagged and card.cluedAsDiscard:
                         break
                     scoreTagged = v
@@ -935,68 +1078,73 @@ class Bot(bot.Bot):
                 playColors.append(c)
             elif scoreTagged < value - 1:
                 futureColors.append(c)
-        neededColors = playColors + futureColors
-        numNeed = len(neededColors)
-        playOrder = []
-        futureOrder = []
-        worthlessOrder = []
-        colorUsed = []
-        numPlay, numFuture, numWorthless, maybeDuplicate = 0, 0, 0, 0
-        numPlayMismatch = 0
-        numFutureMismatch = 0
-        numCompleteMismatch = 0
+        neededColors: List[Color] = playColors + futureColors
+        numNeed: int = len(neededColors)
+        playOrder: List[Tuple[int, Set[Color]]] = []
+        futureOrder: List[Tuple[int, Set[Color]]] = []
+        worthlessOrder: List[Tuple[int, Set[Color]]] = []
+        colorUsed: Set[Color] = set()
+        numPlay: int = 0
+        numFuture: int = 0
+        numWorthless: int = 0
+        maybeDuplicate: int = 0
+        numPlayMismatch: int = 0
+        numFutureMismatch: int = 0
+        numCompleteMismatch: int = 0
         # Check fully tagged cards first
+        i: int
+        t: int
         for t in tagged:
-            card = self.game.deck[t]
+            card = cast(CardKnowledge, self.game.deck[t])
             if self.doesCardMatchHand(t):
                 maybeDuplicate += 1
-            color = card.maybeColor
+            color: Optional[Color] = card.maybeColor
             if color is not None:
                 if color in playColors:
-                    playOrder.append((t, [color]))
+                    playOrder.append((t, {color}))
                     playColors.remove(color)
                     neededColors.remove(color)
-                    colorUsed.append(color)
+                    colorUsed.add(color)
                     tagged.remove(t)
                     if card.value is None:
                         numPlay += 1
                 elif color in futureColors:
-                    futureOrder.append((t, [color]))
+                    futureOrder.append((t, {color}))
                     futureColors.remove(color)
                     neededColors.remove(color)
-                    colorUsed.append(color)
+                    colorUsed.add(color)
                     tagged.remove(t)
                     if card.value is None:
                         numFuture += 1
                 else:
-                    worthlessOrder.append((t, None))
+                    worthlessOrder.append((t, set()))
                     if card.value is None:
                         numWorthless += 1
         for i, t in enumerate(tagged):
-            card = self.game.deck[t]
+            card = cast(CardKnowledge, self.game.deck[t])
             if i < len(playColors):
-                playOrder.append((t, playColors))
+                playOrder.append((t, set(playColors)))
                 if card.suit in playColors and card.suit not in colorUsed:
                     if card.value is None:
                         numPlay += 1
-                    colorUsed.append(card.suit)
+                    colorUsed.add(card.suit)
                 else:
                     if len(colorUsed) < numNeed:
                         numPlayMismatch += 1
                 if card.suit not in neededColors:
                     numCompleteMismatch += 1
             elif i < len(playColors) + len(futureColors):
-                futureOrder.append((t, futureColors))
+                futureOrder.append((t, set(futureColors)))
                 if card.suit in futureColors and card.suit not in colorUsed:
                     if card.value is None:
                         numFuture += 1
-                    colorUsed.append(card.suit)
+                    colorUsed.add(card.suit)
                 else:
                     numFutureMismatch += 1
                 if card.suit not in neededColors:
                     numCompleteMismatch += 1
             else:
-                worthlessOrder.append((t, None))
+                worthlessOrder.append((t, set()))
                 if card.value is None:
                     numWorthless += 1
 
@@ -1005,16 +1153,19 @@ class Bot(bot.Bot):
                 numPlayMismatch, numFutureMismatch, numCompleteMismatch,
                 numNewTagged)
 
-    def doesCardMatchHand(self, deckIdx):
-        deckCard = self.game.deck[deckIdx]
+    def doesCardMatchHand(self, deckIdx: int) -> bool:
+        deckCard: CardKnowledge
+        deckCard = cast(CardKnowledge, self.game.deck[deckIdx])
         assert deckCard.suit is not None
         assert deckCard.rank is not None
         if self.colorComplete[deckCard.suit]:
             return False
         if deckCard.rank == Value.V5:
             return False
+        h: int
         for h in self.hand:
-            card = self.game.deck[h]
+            card: CardKnowledge
+            card = cast(CardKnowledge, self.game.deck[h])
             if not card.clued:
                 continue
             if card.worthless or card.playWorthless:
@@ -1024,7 +1175,7 @@ class Bot(bot.Bot):
             if card.color is not None and card.value is not None:
                 continue
             if card.color == deckCard.suit:
-                maybeValue = card.maybeValue
+                maybeValue: Optional[Value] = card.maybeValue
                 if maybeValue is not None:
                     if maybeValue == deckCard.rank:
                         return True
@@ -1032,7 +1183,7 @@ class Bot(bot.Bot):
                 if deckCard.rank in card.possibleValues:
                     return True
             if card.value == deckCard.rank:
-                maybeColor = card.maybeColor
+                maybeColor: Optional[Color] = card.maybeColor
                 if maybeColor is not None:
                     if maybeColor == deckCard.suit:
                         return True
@@ -1041,52 +1192,70 @@ class Bot(bot.Bot):
                     return True
         return False
 
-    def bestEarlyHintForPlayer(self, player, highValue):
+    def bestEarlyHintForPlayer(self,
+                               player: int,
+                               highValue: bool) -> Optional[Hint]:
         assert player != self.position
-        hand = self.game.players[player].hand
+        hand: List[int] = self.game.players[player].hand
 
-        needToTag = {c: 0 for c in self.colors}
+        c: Color
+        needToTag: Dict[Color, int] = {c: 0 for c in self.colors}
         for c in self.colors:
-            nextValue = len(self.game.playedCards[c]) + 1
+            nextValue: int = len(self.game.playedCards[c]) + 1
             while nextValue < 6:
                 if not self.locatedCount[c][nextValue]:
                     needToTag[c] = nextValue
                     break
                 nextValue += 1
 
-        handState = self.handState(player)
-        discard = self.discardSlot(handState)
+        handState: List[HandState] = self.handState(player)
+        discard: Optional[int] = self.discardSlot(handState)
 
-        numClued = 0
+        numClued: int = 0
+        h: int
+        card: CardKnowledge
         for h in hand:
-            card = self.game.deck[h]
+            card = cast(CardKnowledge, self.game.deck[h])
             if card.clued:
                 numClued += 1
 
-        best_so_far = Hint()
+        best_so_far: Hint = Hint()
         best_so_far.to = player
+        tagged: List[int]
         for c in self.colors:
             tagged = []
+            i: int
             for i in range(len(hand)):
-                card = self.game.deck[hand[i]]
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.suit & c:
                     tagged.append(i)
             if not tagged:
                 continue
 
-            colorFitness = 0
+            colorFitness: int = 0
 
             # Decision Here
+            values: List[Tuple[int, Value]]
+            numPlay: int
+            numWorthless: int
+            maybeDuplicate: int
+            isNewestGood: Optional[bool]
+            needFix: bool
+            numNewTagged: int
+            badClarify: int
+            fixPlayer: Optional[int]
+            fixColor: Optional[Color]
+            fixValue: Optional[List[Value]]
             (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
              needFix, numNewTagged, badClarify,
              fixPlayer, fixColor, fixValue
              ) = self.playOrderColorClue(player, c)
-            goodTag = numNewTagged - badClarify - numWorthless
+            goodTag: int = numNewTagged - badClarify - numWorthless
             if (not needFix and isNewestGood and values[0][1] is not None
                 and maybeDuplicate == 0
                 and goodTag > 0):
-                baseValue, baseSave = 22, 11
-                baseValue += cluePlayWeight[values[0][1]]
+                baseValue: int = 22 + cluePlayWeight[values[0][1]]
+                baseSave: int = 11
                 colorFitness = (numPlay * baseValue
                                 + numWorthless)
 
@@ -1095,28 +1264,38 @@ class Bot(bot.Bot):
                 best_so_far.color = c
                 best_so_far.value = None
 
+        v: Value
         for v in self.values:
             tagged = []
             for i in range(len(hand)):
-                card = self.game.deck[hand[i]]
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.rank == v:
                     tagged.append(i)
             if not tagged:
                 continue
 
-            looksLikeSave = False
+            looksLikeSave: bool = False
             if HandState.Worthless not in handState and discard in tagged:
-                saveColors = self.matchCriticalCardValue(v)
+                saveColors: List[Color] = self.matchCriticalCardValue(v)
                 looksLikeSave = bool(saveColors) and v != Value.V5
             if v == self.lowestPlayableValue:
                 looksLikeSave = False
 
-            valueFitness = 0
+            valueFitness: int = 0
 
             # Decision Here
             if v < self.lowestPlayableValue:
                 pass
             else:
+                playOrder: List[Tuple[int, Set[Color]]]
+                #numPlay: int
+                numFuture: int
+                #numWorthless: int
+                #maybeDuplicate: int
+                numPlayMismatch: int
+                numFutureMismatch: int
+                numCompleteMismatch: int
+                #numNewTagged: int
                 (playOrder, numPlay, numFuture, numWorthless, maybeDuplicate,
                  numPlayMismatch, numFutureMismatch, numCompleteMismatch,
                  numNewTagged
@@ -1126,9 +1305,9 @@ class Bot(bot.Bot):
                         and numPlayMismatch == 0
                         and numFutureMismatch == 0
                         and numCompleteMismatch == 0):
-                    baseValue, baseFuture, baseSave = 20, 5, 20
-                    baseValue += cluePlayWeight[v]
-                    baseFuture += clueFutureWeight[v]
+                    baseValue = 20 + cluePlayWeight[v]
+                    baseFuture = 5 + clueFutureWeight[v]
+                    baseSave = 20
                     valueFitness = (numPlay * baseValue
                                     + numFuture * baseFuture
                                     + numWorthless - looksLikeSave * baseSave)
@@ -1144,42 +1323,47 @@ class Bot(bot.Bot):
             return None
         return best_so_far
 
-    def bestHintForPlayer(self, player):
+    def bestHintForPlayer(self, player: int) -> Optional[Hint]:
         assert player != self.position
-        hand = self.game.players[player].hand
+        hand: List[int] = self.game.players[player].hand
 
-        needToTag = {c: 0 for c in self.colors}
+        needToTag: Dict[Color, int] = {c: 0 for c in self.colors}
+        c: Color
         for c in self.colors:
-            nextValue = len(self.game.playedCards[c]) + 1
+            nextValue: int = len(self.game.playedCards[c]) + 1
             while nextValue < 6:
                 if not self.locatedCount[c][nextValue]:
                     needToTag[c] = nextValue
                     break
                 nextValue += 1
 
-        awayFromPlayable = [-10] * len(hand)
-        awayFromTaggable = [-10] * len(hand)
+        awayFromPlayable: List[int] = [-10] * len(hand)
+        awayFromTaggable: List[int] = [-10] * len(hand)
+        i: int
+        card: CardKnowledge
         for i in range(len(hand)):
-            card = self.game.deck[hand[i]]
+            card = cast(CardKnowledge, self.game.deck[hand[i]])
             nextValue = len(self.game.playedCards[card.suit]) + 1
             awayFromPlayable[i] = nextValue - card.rank
             awayFromTaggable[i] = needToTag[card.suit] - card.rank
 
-        handState = self.handState(player)
-        discard = self.discardSlot(handState)
+        handState: List[HandState] = self.handState(player)
+        discard: Optional[int] = self.discardSlot(handState)
 
-        numClued = 0
+        numClued: int = 0
+        h: int
         for h in hand:
-            card = self.game.deck[h]
+            card = cast(CardKnowledge, self.game.deck[h])
             if card.clued:
                 numClued += 1
 
-        best_so_far = Hint()
+        best_so_far: Hint = Hint()
         best_so_far.to = player
+        tagged: List[int]
         for c in self.colors:
             tagged = []
             for i in range(len(hand)):
-                card = self.game.deck[hand[i]]
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.suit & c:
                     tagged.append(i)
             if not tagged:
@@ -1193,17 +1377,29 @@ class Bot(bot.Bot):
             colorFitness = 0
 
             # Decision Here
+            values: List[Tuple[int, Value]]
+            numPlay: int
+            numWorthless: int
+            maybeDuplicate: int
+            isNewestGood: Optional[bool]
+            needFix: bool
+            numNewTagged: int
+            badClarify: int
+            fixPlayer: Optional[int]
+            fixColor: Optional[Color]
+            fixValue: Optional[List[Value]]
             (values, numPlay, numWorthless, maybeDuplicate, isNewestGood,
              needFix, numNewTagged, badClarify,
              fixPlayer, fixColor, fixValue
              ) = self.playOrderColorClue(player, c)
-            goodTag = numNewTagged - badClarify - numWorthless
+            goodTag: int = numNewTagged - badClarify - numWorthless
+            needToPlay: int
             needToPlay = self.maxPlayValue[c] - len(self.game.playedCards[c])
             if (not needFix and isNewestGood and values[0][1] is not None
                 and maybeDuplicate == 0
                 and goodTag > 0):
-                baseValue, baseSave = 22, 11
-                baseValue += cluePlayWeight[values[0][1]]
+                baseValue: int = 22 + cluePlayWeight[values[0][1]]
+                baseSave: int = 11
                 colorFitness = (numPlay * baseValue
                                 + numWorthless
                                 - looksLikeSave * baseSave)
@@ -1215,10 +1411,11 @@ class Bot(bot.Bot):
                 best_so_far.color = c
                 best_so_far.value = None
 
+        v: Value
         for v in self.values:
             tagged = []
             for i in range(len(hand)):
-                card = self.game.deck[hand[i]]
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.rank == v:
                     tagged.append(i)
             if not tagged:
@@ -1226,17 +1423,26 @@ class Bot(bot.Bot):
 
             looksLikeSave = False
             if HandState.Worthless not in handState and discard in tagged:
-                saveColors = self.matchCriticalCardValue(v)
+                saveColors: List[Color] = self.matchCriticalCardValue(v)
                 looksLikeSave = bool(saveColors) or v == Value.V5
             if v == self.lowestPlayableValue:
                 looksLikeSave = False
 
-            valueFitness = 0
+            valueFitness: int = 0
 
             # Decision Here
             if v < self.lowestPlayableValue:
                 pass
             else:
+                playOrder: List[Tuple[int, Set[Color]]]
+                #numPlay: int
+                numFuture: int
+                #numWorthless: int
+                #maybeDuplicate: int
+                numPlayMismatch: int
+                numFutureMismatch: int
+                numCompleteMismatch: int
+                #numNewTagged: int
                 (playOrder, numPlay, numFuture, numWorthless, maybeDuplicate,
                  numPlayMismatch, numFutureMismatch, numCompleteMismatch,
                  numNewTagged
@@ -1246,9 +1452,13 @@ class Bot(bot.Bot):
                         and numPlayMismatch == 0
                         and numFutureMismatch == 0
                         and numCompleteMismatch == 0):
-                    baseValue, baseFuture, baseSave = 20, 7, 20
+                    baseValue = 20
+                    baseFuture: int = 7
+                    baseSave = 20
                     if v == Value.V5:
-                        baseValue, baseFuture, baseSave = 7, 2, 7
+                        baseValue = 7
+                        baseFuture = 2
+                        baseSave = 7
                     baseValue += cluePlayWeight[v]
                     baseFuture += clueFutureWeight[v]
                     valueFitness = (numPlay * baseValue
@@ -1267,22 +1477,35 @@ class Bot(bot.Bot):
             return None
         return best_so_far
 
-    def bestCardToPlay(self):
-        handState = self.handState(self.position)
+    def bestCardToPlay(self) -> Optional[int]:
+        handState: List[HandState] = self.handState(self.position)
+        handInfo: List[Tuple[int, Tuple[HandState, int]]]
         handInfo = list(enumerate(zip(handState, self.hand)))
 
+        lowestValue: int
+        index: Optional[int]
+        i: int
+        hs: HandState
+        h: int
+        card: CardKnowledge
+        value: Optional[Value]
+        passed: bool
+
         lowestValue = 6
         index = None
         for i, (hs, h) in reversed(handInfo):
             if hs == HandState.Playable:
-                card = self.game.deck[h]
+                card = cast(CardKnowledge, self.game.deck[h])
                 value = card.maybeValue
+                assert value is not None
                 passed = False
-                for c in card.maybeColors:
-                    nextClued = self.isCluedSomewhere(
-                        c, value + 1, player=self.position, strict=True)
-                    if nextClued:
-                        passed = True
+                if value < Value.V5:
+                    for c in card.maybeColors:
+                        nextClued = self.isCluedSomewhere(
+                            c, Value(value + 1), player=self.position,
+                            strict=True)
+                        if nextClued:
+                            passed = True
                 if not passed:
                     continue
                 if value.value < lowestValue:
@@ -1295,13 +1518,15 @@ class Bot(bot.Bot):
         index = None
         for i, (hs, h) in reversed(handInfo):
             if hs == HandState.Playable:
-                card = self.game.deck[h]
+                card = cast(CardKnowledge, self.game.deck[h])
                 value = card.maybeValue
                 passed = False
-                for c in card.maybeColors:
-                    nextClued = self.isCluedSomewhere(c, value + 1, maybe=True)
-                    if nextClued:
-                        passed = True
+                if value < Value.V5:
+                    for c in card.maybeColors:
+                        nextClued = self.isCluedSomewhere(c, Value(value + 1),
+                                                          maybe=True)
+                        if nextClued:
+                            passed = True
                 if not passed:
                     continue
                 if value.value < lowestValue:
@@ -1314,27 +1539,29 @@ class Bot(bot.Bot):
         index = None
         for i, (hs, h) in reversed(handInfo):
             if hs == HandState.Playable:
-                card = self.game.deck[h]
+                card = cast(CardKnowledge, self.game.deck[h])
                 value = card.maybeValue
                 if value.value < lowestValue:
                     index = i
                     lowestValue = value.value
         return index
 
-    def maybePlayCard(self):
-        best_index = self.bestCardToPlay()
+    def maybePlayCard(self) -> bool:
+        best_index: Optional[int] = self.bestCardToPlay()
         if best_index is not None:
             self.play_card(best_index)
             return True
         return False
 
-    def maybeGiveEarlyGameHint(self, highValue):
-        bestHint = Hint()
+    def maybeGiveEarlyGameHint(self, highValue: bool) -> bool:
+        bestHint: Hint = Hint()
+        i: int
         for i in range(1, self.game.numPlayers):
-            player = (self.position + i) % self.game.numPlayers
+            player: int = (self.position + i) % self.game.numPlayers
+            candidate: Optional[Hint]
             candidate = self.bestEarlyHintForPlayer(player, highValue)
             if candidate is not None and candidate.fitness >= 0:
-                handState = self.handState(player)
+                handState: List[HandState] = self.handState(player)
                 if HandState.Playable not in handState:
                     candidate.fitness += (self.game.numPlayers - i) * 2
             if candidate is not None and candidate.fitness > bestHint.fitness:
@@ -1345,16 +1572,17 @@ class Bot(bot.Bot):
         bestHint.give(self)
         return True
 
-    def maybeGiveHelpfulHint(self):
-        if self.game.clueCount == 0:
-            assert False
+    def maybeGiveHelpfulHint(self) -> bool:
+        assert self.game.clueCount != 0
 
-        bestHint = Hint()
+        bestHint: Hint = Hint()
+        i: int
         for i in range(1, self.game.numPlayers):
-            player = (self.position + i) % self.game.numPlayers
+            player: int = (self.position + i) % self.game.numPlayers
+            candidate: Optional[Hint]
             candidate = self.bestHintForPlayer(player)
             if candidate is not None and candidate.fitness >= 0:
-                handState = self.handState(player)
+                handState: List[HandState] = self.handState(player)
                 if HandState.Playable not in handState:
                     candidate.fitness += (self.game.numPlayers - i) * 2
             if candidate is not None and candidate.fitness > bestHint.fitness:
@@ -1366,9 +1594,11 @@ class Bot(bot.Bot):
         return True
 
     def maybeSpendEndGameClue(self):
+        moreToPlay: int
         moreToPlay = sum(self.maxPlayValue.values()) - self.game.scoreCount
-        shouldClue = moreToPlay <= self.game.clueCount
-        hs = self.handState(self.position)
+        shouldClue: bool = moreToPlay <= self.game.clueCount
+        hs: List[HandState] = self.handState(self.position)
+        player: int
         if HandState.SoonPlay in hs:
             shouldClue = True
         elif self.game.clueCount == 1:
@@ -1380,16 +1610,24 @@ class Bot(bot.Bot):
         if not shouldClue:
             return False
 
-        hint = Hint()
+        hint: Hint = Hint()
         for i in range(1, self.game.numPlayers):
             player = (self.position + i) % self.game.numPlayers
-            hand = self.game.players[player].hand
+            hand: List[int] = self.game.players[player].hand
 
+            v: Value
+            c: Color
+            h: int
+            tagged: int
+            match: int
+            base: int
+            fitness: int
+            card: CardKnowledge
             for v in self.values[:self.lowestPlayableValue-1]:
                 tagged = 0
                 match = 0
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.rank == v:
                         if card.value is None:
                             tagged += 1
@@ -1413,7 +1651,7 @@ class Bot(bot.Bot):
                 includeFive = False
                 includeNonFive = False
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.suit & c:
                         matched += 1
                         if card.color is None or not card.positiveClueColor:
@@ -1441,17 +1679,24 @@ class Bot(bot.Bot):
         else:
             return False
 
-    def giveHintOnNoDiscards(self):
-        hint = Hint()
+    def giveHintOnNoDiscards(self) -> bool:
+        hint: Hint = Hint()
+        i: int
         for i in range(1, self.game.numPlayers):
-            player = (self.position + i) % self.game.numPlayers
-            hand = self.game.players[player].hand
+            player: int = (self.position + i) % self.game.numPlayers
+            hand: List[int] = self.game.players[player].hand
 
+            v: Value
+            c: Color
+            tagged: int
+            match: int
+            fitness: int
+            card: CardKnowledge
             for v in self.values[:self.lowestPlayableValue-1] + [Value.V5]:
                 tagged = 0
                 match = 0
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.rank == v:
                         if card.value is None:
                             tagged += 1
@@ -1472,10 +1717,10 @@ class Bot(bot.Bot):
             for c in self.colors:
                 tagged = 0
                 matched = 0
-                includeFive = False
-                includeNonFive = False
+                includeFive: bool = False
+                includeNonFive: bool = False
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.suit & c:
                         matched += 1
                         if card.color is None or not card.positiveClueColor:
@@ -1500,7 +1745,7 @@ class Bot(bot.Bot):
             for v in self.values[self.lowestPlayableValue-1:4]:
                 tagged = 0
                 for h in hand:
-                    card = self.game.deck[h]
+                    card = cast(CardKnowledge, self.game.deck[h])
                     if card.rank == v:
                         tagged += 1
                 if tagged:
@@ -1514,21 +1759,25 @@ class Bot(bot.Bot):
             hint.give(self)
             return True
         else:
-            assert None
+            assert False
 
-    def maybeDiscardOldCard(self):
-        handState = self.handState(self.position)
-        discard = self.discardSlot(handState)
+    def maybeDiscardOldCard(self) -> bool:
+        handState: List[HandState] = self.handState(self.position)
+        discard: Optional[int] = self.discardSlot(handState)
         if discard is not None:
             self.discard_card(discard)
             return True
         return False
 
-    def discardSomeCard(self):
-        best_index = 0
+    def discardSomeCard(self) -> bool:
+        best_index: int = 0
+        card: CardKnowledge
+        bestCard: CardKnowledge
+        i: int
         for i in range(len(self.hand)):
-            card = self.game.deck[self.hand[i]]
-            bestCard = self.game.deck[self.hand[best_index]]
+            card = cast(CardKnowledge, self.game.deck[self.hand[i]])
+            bestCard = cast(CardKnowledge,
+                            self.game.deck[self.hand[best_index]])
             if bestCard.maybeValue is None:
                 best_index = i
             elif (card.maybeValue is not None
@@ -1537,29 +1786,35 @@ class Bot(bot.Bot):
         self.discard_card(best_index)
         return True
 
-    def reevaluateClue(self, clues, to):
+    def reevaluateClue(self, clues: List[ClueState], to: int) -> None:
+        clueState: ClueState
         for clueState in clues:
             if clueState.value is not None:
-                critical = clueState.critical
-                possibleColors = clueState.playColors[:]
-                laterColors = clueState.laterColors[:]
-                criticalColors = clueState.discardColors[:]
-                newestIndex = None
+                critical: bool = clueState.critical
+                possibleColors: List[Color] = clueState.playColors[:]
+                laterColors: List[Color] = clueState.laterColors[:]
+                criticalColors: List[Color] = clueState.discardColors[:]
+                newestIndex: Optional[int] = None
+                i: int
                 for i in reversed(clueState.indexes):
                     if not clueState.wasClued[i]:
                         newestIndex = i
                         break
-                newestCard = None
+                newestCard: Optional[CardKnowledge] = None
+                h: int
                 if newestIndex is not None:
-                    newestCard = self.game.deck[clueState.hand[newestIndex]]
+                    h = clueState.hand[newestIndex]
+                    newestCard = cast(CardKnowledge, self.game.deck[h])
+                c: Color
                 for c in self.colors:
-                    played = self.playedCount[c][clueState.value]
-                    held = self.eyesightCount[c][clueState.value]
-                    score = len(self.game.playedCards[c])
+                    played: int = self.playedCount[c][clueState.value]
+                    held: int = self.eyesightCount[c][clueState.value]
+                    score: int = len(self.game.playedCards[c])
+                    cantBe: bool
                     cantBe = played + held == clueState.value.num_copies
                     cantBe = cantBe or score >= clueState.value
                     if newestCard is not None:
-                        v = clueState.value
+                        v: Value = clueState.value
                         cantBe = cantBe or newestCard.cantBe[c][v]
                     cantBe = cantBe or self.isCluedSomewhere(
                         c, clueState.value, to)
@@ -1570,16 +1825,22 @@ class Bot(bot.Bot):
                             laterColors.remove(c)
                         if c in criticalColors:
                             criticalColors.remove(c)
-                numAllColors = len(possibleColors) + len(laterColors)
+                numAllColors: int = len(possibleColors) + len(laterColors)
                 if critical:
-                    discardCard = self.game.deck[clueState.discardIndex]
+                    discardCard: CardKnowledge
+                    discardCard = cast(CardKnowledge,
+                                       self.game.deck[clueState.discardIndex])
                     for c in criticalColors[:]:
                         if discardCard.cannotBeColor(c):
                             criticalColors.remove(c)
+                card: CardKnowledge
+                deckIdx: int
                 for h in reversed(clueState.indexes):
-                    card = self.game.deck[clueState.hand[h]]
+                    deckIdx = clueState.hand[h]
+                    card = cast(CardKnowledge, self.game.deck[deckIdx])
                     if card.state != CardState.Hand:
                         continue
+                    clueIndex: int
                     clueIndex = (len(clueState.indexes)
                                  - clueState.indexes.index(h) - 1)
                     if card.color is not None:
@@ -1610,7 +1871,8 @@ class Bot(bot.Bot):
                                     or not card.playColors):
                                 card.playWorthless = True
                 for h in clueState.indexes:
-                    card = self.game.deck[clueState.hand[h]]
+                    deckIdx = clueState.hand[h]
+                    card = cast(CardKnowledge, self.game.deck[deckIdx])
                     if card.state != CardState.Hand:
                         continue
                     if critical or critical is None:
@@ -1645,7 +1907,9 @@ class Bot(bot.Bot):
                             card.cluedAsPlay = True
                         else:
                             for h in clueState.hand:
-                                taggedCard = self.game.deck[h]
+                                taggedCard: CardKnowledge
+                                taggedCard = cast(CardKnowledge,
+                                                  self.game.deck[h])
                                 if taggedCard.color == card.color:
                                     taggedCard.cluedAsPlay = True
                                     taggedCard.valuable = None
@@ -1653,11 +1917,14 @@ class Bot(bot.Bot):
                     else:
                         card.cluedAsPlay = True
 
-    def updatePlayableValue(self, player):
-        rtnValue = False
-        player_ = self.game.players[player]
-        cardsNeeded = {c: 0 for c in self.colors}
-        fullyKnown = {c: 0 for c in self.colors}
+    def updatePlayableValue(self, player: int) -> bool:
+        rtnValue: bool = False
+        player_: Player = self.game.players[player]
+        cardsNeeded: Dict[Color, int] = {c: 0 for c in self.colors}
+        fullyKnown: Dict[Color, int] = {c: 0 for c in self.colors}
+        c: Color
+        v: Value
+        score: int
         for c in self.colors:
             if self.colorComplete[c]:
                 continue
@@ -1669,22 +1936,26 @@ class Bot(bot.Bot):
                     if (self.locatedCount[c][v]
                             or self.eyesightCount[c][v] == v.num_copies):
                         fullyKnown[c] += 1
+        card: CardKnowledge
+        tagged: List[int]
         for c in self.colors:
             if self.colorComplete[c]:
                 continue
             tagged = []
+            h: int
             for h in reversed(player_.hand):
-                card = self.game.deck[h]
+                card = cast(CardKnowledge, self.game.deck[h])
                 if card.clued and card.color == c:
                     tagged.append(h)
             score = len(self.game.playedCards[c])
+            t: int
             for v in self.values[score:]:
                 if not tagged:
                     break
                 if self.isCluedSomewhere(c, v, player):
                     continue
                 for t in tagged[:]:
-                    card = self.game.deck[t]
+                    card = cast(CardKnowledge, self.game.deck[t])
                     if card.valuable:
                         continue
                     if card.cantBe[c][v]:
@@ -1699,7 +1970,7 @@ class Bot(bot.Bot):
                     tagged.remove(t)
                     break
             for t in tagged:
-                card = self.game.deck[t]
+                card = cast(CardKnowledge, self.game.deck[t])
                 if card.valuable:
                     continue
                 if card.clued and card.value is None and card.color == c:
@@ -1707,15 +1978,16 @@ class Bot(bot.Bot):
                     card.playWorthless = True
         return rtnValue
 
-    def pleaseObserveBeforeMove(self):
+    def pleaseObserveBeforeMove(self) -> None:
         self.updateDiscardCount()
         self.updateColorValueTables()
 
         self.lowestPlayableValue = 6
+        color: Color
         for color in self.colors:
             if self.colorComplete[color]:
                 continue
-            lowest = len(self.game.playedCards[color]) + 1
+            lowest: int = len(self.game.playedCards[color]) + 1
             if lowest < self.lowestPlayableValue:
                 self.lowestPlayableValue = lowest
 
@@ -1723,12 +1995,16 @@ class Bot(bot.Bot):
         self.updateLocatedCount()
         while True:
             self.updateEyesightCount()
-            done = True
+            done: bool = True
+            p: int
+            i: int
             for p in range(self.game.numPlayers):
                 for i in range(len(self.game.players[p].hand)):
-                    knol = self.game.deck[self.game.players[p].hand[i]]
-                    beforeDiscard = knol.cluedAsDiscard
-                    beforePlay = knol.cluedAsPlay
+                    d: int = self.game.players[p].hand[i]
+                    knol: CardKnowledge
+                    knol = cast(CardKnowledge, self.game.deck[d])
+                    beforeDiscard: bool = knol.cluedAsDiscard
+                    beforePlay: bool = knol.cluedAsPlay
                     knol.update(p == self.position)
                     if (knol.clued and knol.color is None
                             and knol.value is not None
@@ -1736,6 +2012,7 @@ class Bot(bot.Bot):
                             and not knol.discardColors
                             and not (knol.playWorthless or knol.worthless)):
                         clues = []
+                        clueState: ClueState
                         for clueState in self.clueLog[p]:
                             if knol.deckPosition not in clueState.hand:
                                 continue
@@ -1762,24 +2039,33 @@ class Bot(bot.Bot):
             for v in self.values:
                 assert self.locatedCount[k][v] <= self.eyesightCount[k][v]
 
-    def pleaseObserveBeforeDiscard(self, from_, card_index, deckIdx):
-        card = self.game.deck[deckIdx]
+    def pleaseObserveBeforeDiscard(self,
+                                   from_: int,
+                                   card_index: int,
+                                   deckIdx: int) -> None:
+        card: CardKnowledge = cast(CardKnowledge, self.game.deck[deckIdx])
         card.state = CardState.Discard
         self.seePublicCard(card.suit, card.rank)
 
-    def pleaseObserveBeforePlay(self, from_, card_index, deckIdx):
-        card = self.game.deck[deckIdx]
+    def pleaseObserveBeforePlay(self,
+                                from_: int,
+                                card_index: int,
+                                deckIdx: int) -> None:
+        card: CardKnowledge = cast(CardKnowledge, self.game.deck[deckIdx])
         card.state = CardState.Play
         self.seePublicCard(card.suit, card.rank)
 
-    def matchCriticalCardColor(self, color, useEyeSight=False):
+    def matchCriticalCardColor(self,
+                               color: Color,
+                               useEyeSight: bool=False) -> List[Value]:
         if self.colorComplete[color]:
             return []
         # Not saving 5's with a color clue
-        score = len(self.game.playedCards[color])
+        score: int = len(self.game.playedCards[color])
         if len(self.game.playedCards[color]) >= 4:
             return []
-        possibleValues = []
+        possibleValues: List[Value] = []
+        v: Value
         for v in self.values[score:self.maxPlayValue[color]]:
             if v.num_copies == 1:
                 continue
@@ -1794,7 +2080,11 @@ class Bot(bot.Bot):
                 possibleValues.append(v)
         return possibleValues
 
-    def matchCriticalCardValue(self, value, useEyeSight=False):
+    def matchCriticalCardValue(self,
+                               value: Value,
+                               useEyeSight: bool=False) -> List[Color]:
+        possibleColors: List[Color]
+        c: Color
         if value == Value.V5:
             possibleColors = []
             for c in self.colors:
@@ -1838,19 +2128,26 @@ class Bot(bot.Bot):
                 possibleColors.append(c)
         return possibleColors
 
-    def pleaseObserveColorHint(self, from_, to, color, card_indices):
-        hand = self.game.players[to].hand
-        score = len(self.game.playedCards[color])
-        handState = self.handState(to)
-        discard = self.discardSlot(handState)
+    def pleaseObserveColorHint(self,
+                               from_: int,
+                               to: int,
+                               color: Color,
+                               card_indices: List[int]):
+        hand: List[int] = self.game.players[to].hand
+        score: int = len(self.game.playedCards[color])
+        handState: List[HandState] = self.handState(to)
+        discard: Optional[int] = self.discardSlot(handState)
 
-        possibleValues = []
+        possibleValues: List[Value] = []
+        v: Value
+        i: int
         for v in self.values[score:self.maxPlayValue[color]]:
             if self.isCluedSomewhere(color, v, to):
                 continue
-            match = False
+            match: bool = False
             for i in card_indices:
-                card = self.game.deck[hand[i]]
+                card: CardKnowledge
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.value == v:
                     match = True
                     break
@@ -1858,18 +2155,22 @@ class Bot(bot.Bot):
                 continue
             possibleValues.append(v)
 
-        numToComplete = self.maxPlayValue[color] - score
+        numToComplete: int = self.maxPlayValue[color] - score
+        criticalValues: List[Value]
         criticalValues = self.matchCriticalCardColor(color, useEyeSight=True)
+        criticalClue: bool
         criticalClue = (HandState.Worthless not in handState
                             and discard in card_indices)
         if HandState.Worthless not in handState and discard in card_indices:
             criticalClue = bool(criticalValues
                                 and numToComplete > len(card_indices))
-        criticalState = criticalClue
+        criticalState: bool = criticalClue
 
-        wasClued = [None] * len(hand)
+        wasClued: List[bool] = [None] * len(hand)
+        h: int
+        knol: CardKnowledge
         for i, h in reversed(list(enumerate(hand))):
-            knol = self.game.deck[hand[i]]
+            knol = cast(CardKnowledge, self.game.deck[hand[i]])
             if i in card_indices:
                 wasClued[i] = knol.clued
                 knol.clued = True
@@ -1886,7 +2187,7 @@ class Bot(bot.Bot):
             else:
                 knol.setCannotBeColor(color)
         for i, h in enumerate(hand):
-            knol = self.game.deck[h]
+            knol = cast(CardKnowledge, self.game.deck[h])
             if i in card_indices:
                 if criticalState or criticalState is None:
                     if not wasClued[i]:
@@ -1912,7 +2213,7 @@ class Bot(bot.Bot):
                 else:
                     knol.cluedAsPlay = True
         for h in hand:
-            knol = self.game.deck[h]
+            knol = cast(CardKnowledge, self.game.deck[h])
             knol.update(False)
 
         clueLog = ClueState(self.game.turnCount, criticalClue,
@@ -1921,25 +2222,34 @@ class Bot(bot.Bot):
                             color=color, discard_values=criticalValues[:])
         self.clueLog[to].append(clueLog)
 
-    def pleaseObserveValueHint(self, from_, to, value, card_indices):
-        hand = self.game.players[to].hand
-        possibleColors = []
-        laterColors = []
-        newestCard = self.game.deck[hand[card_indices[-1]]]
+    def pleaseObserveValueHint(self,
+                               from_: int,
+                               to: int,
+                               value: Value,
+                               card_indices: List[int]) -> None:
+        hand: List[int] = self.game.players[to].hand
+        possibleColors: List[Color] = []
+        laterColors: List[Color] = []
+        deckIdx: int = hand[card_indices[-1]]
+        newestCard: CardKnowledge
+        newestCard = cast(CardKnowledge, self.game.deck[deckIdx])
+        c: Color
+        i: int
         for c in self.colors:
             if self.isCluedSomewhere(c, value, to, maybe=True):
                 continue
             if newestCard.cantBe[c][value]:
                 continue
-            match = False
+            match: bool = False
             for i in card_indices:
-                card = self.game.deck[hand[i]]
+                card: CardKnowledge
+                card = cast(CardKnowledge, self.game.deck[hand[i]])
                 if card.color == c:
                     match = True
                     break
             if match:
                 continue
-            score = len(self.game.playedCards[c])
+            score: int = len(self.game.playedCards[c])
             if score >= value:
                 continue
             if score < value - 1:
@@ -1951,33 +2261,39 @@ class Bot(bot.Bot):
                     possibleColors.append(c)
             else:
                 possibleColors.append(c)
-        handState = self.handState(to)
-        discard = self.discardSlot(handState)
+        handState: List[HandState] = self.handState(to)
+        discard: Optional[int] = self.discardSlot(handState)
 
+        criticalColors: List[Color]
         criticalColors = self.matchCriticalCardValue(value, useEyeSight=True)
+        criticalClue: bool
         criticalClue = ((HandState.Worthless not in handState
                          and discard in card_indices)
                         or value == Value.V5)
         if criticalClue and discard is not None:
-            discardCard = self.game.deck[hand[discard]]
+            discardCard: CardKnowledge
+            discardCard = cast(CardKnowledge, self.game.deck[hand[discard]])
             for c in criticalColors:
                 if not discardCard.cannotBeColor(c):
                     criticalClue = True
                     break
             else:
                 criticalClue = False
-        criticalState = criticalClue
+        criticalState: bool = criticalClue
 
-        numAllColors = len(possibleColors) + len(laterColors)
-        wasClued = [None] * len(hand)
+        numAllColors: int = len(possibleColors) + len(laterColors)
+        wasClued: List[bool] = [None] * len(hand)
+        h: int
+        knol: CardKnowledge
         for i, h in reversed(list(enumerate(hand))):
-            knol = self.game.deck[h]
+            knol = cast(CardKnowledge, self.game.deck[h])
             if i in card_indices:
                 wasClued[i] = knol.clued
-                clueIndex = len(card_indices) - card_indices.index(i) - 1
+                clueIndex: int = len(card_indices) - card_indices.index(i) - 1
                 knol.clued = True
                 knol.setMustBeValue(value)
                 if knol.color is not None:
+                    playingValue: int
                     playingValue = len(self.game.playedCards[knol.color]) + 1
                     if knol.value == playingValue:
                         knol.setIsPlayable(True)
@@ -2005,7 +2321,7 @@ class Bot(bot.Bot):
             else:
                 knol.setCannotBeValue(value)
         for i, h in enumerate(hand):
-            knol = self.game.deck[h]
+            knol = cast(CardKnowledge, self.game.deck[h])
             if i in card_indices:
                 if criticalState or criticalState is None:
                     if not wasClued[i]:
@@ -2034,7 +2350,8 @@ class Bot(bot.Bot):
                         knol.cluedAsPlay = True
                     else:
                         for h in hand:
-                            taggedCard = self.game.deck[h]
+                            taggedCard: CardKnowledge
+                            taggedCard = cast(CardKnowledge, self.game.deck[h])
                             if taggedCard.color == knol.color:
                                 taggedCard.cluedAsPlay = True
                                 taggedCard.valuable = None
@@ -2042,7 +2359,7 @@ class Bot(bot.Bot):
                 else:
                     knol.cluedAsPlay = True
         for h in hand:
-            knol = self.game.deck[h]
+            knol = cast(CardKnowledge, self.game.deck[h])
             knol.update(False)
 
         clueLog = ClueState(self.game.turnCount, criticalClue,
@@ -2054,10 +2371,10 @@ class Bot(bot.Bot):
                             discard_color=criticalColors[:])
         self.clueLog[to].append(clueLog)
 
-    def pleaseObserveAfterMove(self):
+    def pleaseObserveAfterMove(self) -> None:
         pass
 
-    def pleaseMakeMove(self, can_clue, can_discard):
+    def pleaseMakeMove(self, can_clue: bool, can_discard: bool) -> None:
         assert self.game.currentPlayer == self.position
 
         stage = self.game_stage()
