@@ -8,7 +8,7 @@ class Hint:
                  fitness: int=0,
                  to: int=-1,
                  color: Optional[Color]=None,
-                 value: Optional[Value]=None):
+                 value: Optional[Value]=None) -> None:
         self.fitness: int = fitness
         self.to: int = to
         self.color: Optional[Color] = color
