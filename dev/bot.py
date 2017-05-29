@@ -798,7 +798,7 @@ class Bot(bot.Bot):
         return False
 
     def maybeDiscardForCriticalCard(self) -> bool:
-        assert 0 < self.game.clueCount < 8
+        assert 0 <= self.game.clueCount < 8
 
         # Don't bother for 2 player games, the hand might end up locked
         if self.game.numPlayers < 3:
